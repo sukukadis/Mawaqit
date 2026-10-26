@@ -4,7 +4,7 @@ A high-performance, modern Windows desktop application for Islamic prayer times 
 
 ---
 
-## 🌟 Key Features & Improvements over Python
+## 🌟 Key Features & Improvements
 
 1. **Native Windows Typography & DirectWrite BiDi Rendering**:
    - Unlike Tkinter which required reversing Arabic words manually, WPF natively uses DirectWrite / Uniscribe and HarfBuzz text shaping.
