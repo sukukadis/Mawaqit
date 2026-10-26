@@ -22,7 +22,7 @@
 > [!IMPORTANT]
 > **🇩🇿 Algeria Only / يعمل في الجزائر فقط:**
 > - **English:** This application is designed to work **only in Algeria**. Prayer times are calculated exclusively according to the official calculation method of the **Algerian Ministry of Religious Affairs (وزارة الشؤون الدينية والأوقاف)** and covers all 58 Algerian wilayas and major communes.
-> - **العربية:** هذا التطبيق مخصص للعمل **في الجزائر فقط**، ويغطي مواقيت الصلاة لجميع ولايات الجزائر الـ 58 والبلديات الكبرى وفق الحساب الرسمي المعتمد من طرف **وزارة الشؤون الدينية والأوقاف الجزائرية**.
+> - **العربية:** هذا التطبيق مخصص للعمل **في الجزائر فقط**، ويغطي مواقيت الصلاة لجميع ولايات الجزائر الـ 69 والبلديات الكبرى وفق الحساب الرسمي المعتمد من طرف **وزارة الشؤون الدينية والأوقاف الجزائرية**.
 
 A high-performance, modern Windows desktop application for Islamic prayer times in Algeria, remade in **C# (.NET 8 WPF)** from the original Python/Tkinter application.
 
