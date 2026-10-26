@@ -13,7 +13,7 @@
   <img src="https://img.shields.io/badge/Platform-Windows%2010%20%2F%2011-0078D4?logo=windows" alt="Platform: Windows" />
   <img src="https://img.shields.io/badge/Framework-.NET%208%20WPF-512BD4?logo=dotnet" alt="Framework: .NET 8 WPF" />
   <img src="https://img.shields.io/badge/Language-C%23%2012-239120?logo=csharp" alt="Language: C#" />
-  <img src="https://img.shields.io/badge/Coverage-59%20Wilayas-10B981" alt="Coverage: 69 Wilayas" />
+  <img src="https://img.shields.io/badge/Coverage-69%20Wilayas-10B981" alt="Coverage: 69 Wilayas" />
   <img src="https://img.shields.io/badge/Algeria%20Only-🇩🇿-green" alt="Algeria Only" />
 </p>
 
