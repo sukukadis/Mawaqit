@@ -1,4 +1,23 @@
-# Mawaqit (مواقيت الصلاة) - C# / .NET 8 WPF Edition
+<p align="center">
+  <img src="logo.png" width="120" height="120" alt="Mawaqit Logo" />
+</p>
+
+<h1 align="center">Mawaqit (مواقيت الصلاة) - C# / .NET 8 WPF Edition</h1>
+
+<p align="center">
+  <b>A modern, high-performance Windows desktop application for Islamic prayer times in Algeria</b><br>
+  Built with <b>C# (.NET 8 WPF)</b> • Windows 11 Fluent Design & Mica • Real-time Taskbar Countdown Widget • Adhan Audio & Notifications
+</p>
+
+<p align="center">
+  <img src="https://img.shields.io/badge/Platform-Windows%2010%20%2F%2011-0078D4?logo=windows" alt="Platform: Windows" />
+  <img src="https://img.shields.io/badge/Framework-.NET%208%20WPF-512BD4?logo=dotnet" alt="Framework: .NET 8 WPF" />
+  <img src="https://img.shields.io/badge/Language-C%23%2012-239120?logo=csharp" alt="Language: C#" />
+  <img src="https://img.shields.io/badge/Coverage-58%20Wilayas%20%2B%20Communes-10B981" alt="Coverage: 58 Wilayas" />
+  <img src="https://img.shields.io/badge/Algeria%20Only-🇩🇿-green" alt="Algeria Only" />
+</p>
+
+---
 
 > [!IMPORTANT]
 > **🇩🇿 Algeria Only / يعمل في الجزائر فقط:**
@@ -6,6 +25,35 @@
 > - **العربية:** هذا التطبيق مخصص للعمل **في الجزائر فقط**، ويغطي مواقيت الصلاة لجميع ولايات الجزائر الـ 58 والبلديات الكبرى وفق الحساب الرسمي المعتمد من طرف **وزارة الشؤون الدينية والأوقاف الجزائرية**.
 
 A high-performance, modern Windows desktop application for Islamic prayer times in Algeria, remade in **C# (.NET 8 WPF)** from the original Python/Tkinter application.
+
+---
+
+## 📸 Application Showcase
+
+### 🖥️ Main Dashboard & Quick Glance Flyout
+The main application dashboard provides an elegant view of all daily prayer times with live countdown to the next prayer, active prayer highlighting, weather integration, and per-wilaya manual calibration. The quick taskbar flyout opens instantly from the tray with completed prayer checkmarks and Quranic verse.
+
+<p align="center">
+  <img src="screenshots/main_dashboard.jpg" width="48%" alt="Main Prayer Times Dashboard & Manual Tuning" />
+  &nbsp;
+  <img src="screenshots/taskbar_flyout.png" width="48%" alt="Taskbar Quick Flyout Window with Quranic Verse" />
+</p>
+
+### ⏱️ Real-Time Taskbar Countdown Widget
+A dedicated, borderless Fluent widget sitting directly on your Windows taskbar next to the notification area. Always know how much time is left until the next prayer at a glance, with seconds precision, elapsed indicators, and seamless tray docking.
+
+<p align="center">
+  <img src="screenshots/taskbar_widget.png" width="85%" alt="Windows Taskbar Countdown Timer Widget" />
+</p>
+
+### ⚙️ Rich Customization & Settings
+Tailor every aspect of the application: select from all 58 Algerian Wilayas, pick and test custom Adhan & Pre-prayer reminder `.mp3` audio files, customize notification timing, toggle taskbar widget options, switch between Dark/Light themes, and enable Windows auto-start.
+
+<p align="center">
+  <img src="screenshots/settings_audio_notifications.jpg" width="48%" alt="Location, Adhan & Notifications Settings" />
+  &nbsp;
+  <img src="screenshots/settings_theme_startup.jpg" width="48%" alt="Theme, Language & Windows Startup Settings" />
+</p>
 
 ---
 
@@ -17,7 +65,7 @@ A high-performance, modern Windows desktop application for Islamic prayer times 
 2. **Windows 11 Fluent Design & Mica / Glass**:
    - Native integration with Windows 11 Desktop Window Manager (DWM) for rounded corners (`DWMWCP_ROUND`), immersive dark mode (`DWMWA_USE_IMMERSIVE_DARK_MODE`), and system backdrops (`DWMWA_SYSTEMBACKDROP_TYPE`).
    - Emerald green accent (`#10B981`) highlighting the next prayer card with active live countdown.
-3. **Calculation Method**:
+3. **Official Algerian Calculation Method**:
    - Algerian Ministry of Religious Affairs (AlAdhan API method 19).
    - Friday rule: On Friday, Dhuhr is automatically displayed as **Jumu'ah** (الجمعة).
 4. **All 69 Algerian Wilayas & Communes**:
@@ -26,30 +74,31 @@ A high-performance, modern Windows desktop application for Islamic prayer times 
 5. **Manual Time Tuning per Wilaya**:
    - Adjust +/- 60 minutes for Fajr, Dhuhr, Asr, Maghrib, and Isha directly on the Prayer Times tab.
    - Changes are saved per wilaya in `%APPDATA%\Mawaqit\config.json` and immediately update the countdown and cards.
-6. **Audio & Notifications**:
+6. **Custom Audio & Notifications**:
    - Play Adhan at exact prayer time.
    - Pre-prayer reminder (1–60 minutes before Adhan).
    - Custom floating Toast Notifications (with auto-dismiss or stay open during Adhan).
-   - Audio file picker and interactive **Test (▶) / Stop (⏹)** toggle.
+   - Audio file picker with interactive **Test (▶) / Stop (⏹)** toggle.
    - Self-healing audio path resolver that locates MP3s across AppData, application folders, or user paths.
-7. **System Tray Integration**:
-   - Lives in the system notification tray with live tooltip: `Mawaqit — العصر متبقٍ 1:23:45`.
+7. **Taskbar Timer Countdown Widget (Awqat Salaat Style)**:
+   - Dedicated, borderless Fluent widget directly on the Windows Taskbar showing real-time ticking countdown to the next prayer.
+   - Sits docked seamlessly beside the system tray (with DPI awareness for 100%–200% scaling).
+   - Can be freely dragged across the taskbar or desktop with auto-saved custom coordinates.
+   - Shows prayer icon, name, prayer time, and countdown (`-01:23:45`).
+   - During active prayer / Adhan window (0–20 mins), displays an elapsed indicator (`+00:04:12`) with pulsing amber/emerald badge.
+   - Left-click toggles the main window; right-click context menu provides quick controls (Dock next to tray, toggle seconds, toggle prayer time, compact view, Settings, hide).
+8. **Fluent / Mica Taskbar Flyout**:
+   - One-click popup directly from the tray with next prayer highlight, completed prayers checkmarks, current weather, and daily Quranic verse.
+9. **System Tray Integration**:
+   - Lives in the system notification tray with live tooltip: `Mawaqit — Fajr left 6:26:45`.
    - Context Menu: Show App, Live Countdown, Volume submenu (0%, 25%, 50%, 75%, 100%, Custom slider), Mute/Unmute, About dialog with Quranic verse, and Exit.
-8. **Single Instance Guard & IPC**:
-   - Named Win32 Mutex `Global\Mawaqit_SingleInstance_Mutex_v4` and Event `Global\Mawaqit_ShowEvent_v4`.
-   - When a second instance launches, it signals the existing instance to bring its window to the foreground and exits immediately with code 0.
-9. **Weather & Live Temperature**:
-   - Live temperature from Open-Meteo API for the selected Wilaya's coordinates, updated every 45 minutes with color coding (<5°C, <15°C, <25°C, <35°C, >=35°C).
-10. **Gregorian & Hijri Calendars**:
+10. **Single Instance Guard & IPC**:
+    - Named Win32 Mutex `Global\Mawaqit_SingleInstance_Mutex_v4` and Event `Global\Mawaqit_ShowEvent_v4`.
+    - When a second instance launches, it signals the existing instance to bring its window to the foreground and exits immediately with code 0.
+11. **Weather & Live Temperature**:
+    - Live temperature from Open-Meteo API for the selected Wilaya's coordinates, updated every 45 minutes with color coding (<5°C, <15°C, <25°C, <35°C, >=35°C).
+12. **Gregorian & Hijri Calendars**:
     - Dual calendar display using `System.Globalization.UmAlQuraCalendar`.
-11. **Taskbar Timer Countdown Widget (Like Awqat Salaat WinUI)**:
-    - Dedicated, borderless Fluent widget directly on the Windows Taskbar showing real-time ticking countdown to the next prayer.
-    - Sits docked seamlessly beside the system tray (with DPI awareness for 100%–200% scaling).
-    - Can be freely dragged across the taskbar or desktop with auto-saved custom coordinates.
-    - Shows prayer icon, name, prayer time, and countdown (`-01:23:45`).
-    - During active prayer / Adhan window (0–20 mins), displays an elapsed indicator (`+00:04:12`) with pulsing amber/emerald badge.
-    - Left-click toggles the main window; right-click context menu provides quick controls (Dock next to tray, toggle seconds, toggle prayer time, compact view, Settings, hide).
-    - Seamlessly synchronized with System Tray context menu and dedicated Settings tab controls.
 
 ---
 
@@ -72,6 +121,12 @@ Mawaqit/
 ├── App.xaml / App.xaml.cs            # Entry point, single-instance guard, CLI handling
 ├── MainWindow.xaml / .xaml.cs        # Main dashboard, tabs, prayer cards, countdown, tuning
 ├── GlobalUsings.cs                   # Clean global namespaces
+├── screenshots/                      # Application preview screenshots
+│   ├── main_dashboard.jpg            # Main prayer dashboard & tuning view
+│   ├── taskbar_flyout.png            # Fluent / Mica taskbar quick flyout
+│   ├── taskbar_widget.png            # Windows taskbar live countdown widget
+│   ├── settings_audio_notifications.jpg # Audio & notification settings
+│   └── settings_theme_startup.jpg    # Theme, language & startup settings
 ├── Models/
 │   ├── Wilaya.cs                     # 69 Algerian locations with coordinates & search filter
 │   ├── PrayerTimes.cs                # Prayer models, order, and icons
@@ -90,11 +145,13 @@ Mawaqit/
 │   └── DwmHelper.cs                  # Windows 11 DWM glass & dark mode styling
 ├── Controls/
 │   ├── AboutWindow.xaml / .cs        # Quranic verse [An-Nisa: 103] & author modal
+│   ├── TaskbarFlyoutWindow.xaml / .cs# Fluent taskbar quick glance flyout
 │   ├── TaskbarWidgetWindow.xaml / .cs# Taskbar timer countdown widget (Awqat Salaat WinUI style)
 │   ├── ToastNotificationWindow.xaml  # Floating corner toast notification
 │   └── VolumePopupWindow.xaml       # Slim tray volume slider
 └── Resources/
     ├── logo.ico                      # Application icon
+    ├── logo.png                      # Application logo
     └── Media/
         ├── adhan.mp3                 # Adhan audio file
         └── reminder.mp3              # Pre-prayer reminder audio file
@@ -144,4 +201,3 @@ You can build the installer with one command or double-click:
 The compiled installers are saved in:
 - `installer_output\Mawaqit-2.0.0-Setup.exe` (Standard)
 - `installer_output\Mawaqit-2.0.0-Standalone-Setup.exe` (Standalone)
-
