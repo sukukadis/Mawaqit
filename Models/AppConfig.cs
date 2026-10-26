@@ -1,0 +1,153 @@
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Text.Json;
+using System.Text.Json.Serialization;
+
+namespace Mawaqit.Models;
+
+public class AppConfig
+{
+    [JsonPropertyName("wilaya_ar")]
+    public string WilayaAr { get; set; } = "الجزائر";
+
+    [JsonPropertyName("wilaya_en")]
+    public string WilayaEn { get; set; } = "Alger";
+
+    [JsonPropertyName("language")]
+    public string Language { get; set; } = "ar";
+
+    [JsonPropertyName("adhan_enabled")]
+    public bool AdhanEnabled { get; set; } = true;
+
+    [JsonPropertyName("adhan_file")]
+    public string AdhanFile { get; set; } = "";
+
+    [JsonPropertyName("reminder_enabled")]
+    public bool ReminderEnabled { get; set; } = true;
+
+    [JsonPropertyName("reminder_file")]
+    public string ReminderFile { get; set; } = "";
+
+    [JsonPropertyName("reminder_minutes")]
+    public int ReminderMinutes { get; set; } = 10;
+
+    [JsonPropertyName("start_with_windows")]
+    public bool StartWithWindows { get; set; } = false;
+
+    [JsonPropertyName("theme_mode")]
+    public string ThemeMode { get; set; } = "dark";
+
+    [JsonPropertyName("muted")]
+    public bool Muted { get; set; } = false;
+
+    [JsonPropertyName("volume")]
+    public double Volume { get; set; } = 0.33;
+
+    [JsonPropertyName("adhan_popup_enabled")]
+    public bool AdhanPopupEnabled { get; set; } = true;
+
+    [JsonPropertyName("reminder_popup_enabled")]
+    public bool ReminderPopupEnabled { get; set; } = true;
+
+    [JsonPropertyName("taskbar_widget_enabled")]
+    public bool TaskbarWidgetEnabled { get; set; } = true;
+
+    [JsonPropertyName("taskbar_widget_show_seconds")]
+    public bool TaskbarWidgetShowSeconds { get; set; } = true;
+
+    [JsonPropertyName("taskbar_widget_show_time")]
+    public bool TaskbarWidgetShowTime { get; set; } = true;
+
+    [JsonPropertyName("taskbar_widget_compact")]
+    public bool TaskbarWidgetCompact { get; set; } = false;
+
+    [JsonPropertyName("taskbar_widget_dock_mode")]
+    public string TaskbarWidgetDockMode { get; set; } = "tray_left";
+
+    [JsonPropertyName("taskbar_widget_pos_x")]
+    public double TaskbarWidgetPosX { get; set; } = -1;
+
+    [JsonPropertyName("taskbar_widget_pos_y")]
+    public double TaskbarWidgetPosY { get; set; } = -1;
+
+    [JsonPropertyName("taskbar_widget_monitor")]
+    public int TaskbarWidgetMonitor { get; set; } = 0;
+
+    [JsonPropertyName("tune_by_wilaya")]
+    public Dictionary<string, Dictionary<string, int>> TuneByWilaya { get; set; } = new();
+
+    public static string AppDataFolder =>
+        Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Mawaqit");
+
+    public static string ConfigPath => Path.Combine(AppDataFolder, "config.json");
+    public static string CachePath => Path.Combine(AppDataFolder, "last_timings.json");
+    public static string CacheRawPath => Path.Combine(AppDataFolder, "last_timings_raw.json");
+    public static string ErrorLogPath => Path.Combine(AppDataFolder, "error.log");
+    public static string StartupLogPath => Path.Combine(AppDataFolder, "startup.log");
+    public static string MediaFolder => Path.Combine(AppDataFolder, "Media");
+
+    public static AppConfig Load()
+    {
+        try
+        {
+            if (File.Exists(ConfigPath))
+            {
+                string json = File.ReadAllText(ConfigPath);
+                var config = JsonSerializer.Deserialize<AppConfig>(json, new JsonSerializerOptions
+                {
+                    PropertyNameCaseInsensitive = true
+                });
+                if (config != null)
+                {
+                    config.TuneByWilaya ??= new();
+                    return config;
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            Services.Logger.LogError($"Failed to load config: {ex.Message}");
+        }
+
+        return new AppConfig();
+    }
+
+    public void Save()
+    {
+        try
+        {
+            Directory.CreateDirectory(AppDataFolder);
+            var options = new JsonSerializerOptions
+            {
+                WriteIndented = true,
+                Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping
+            };
+            string json = JsonSerializer.Serialize(this, options);
+            File.WriteAllText(ConfigPath, json);
+        }
+        catch (Exception ex)
+        {
+            Services.Logger.LogError($"Failed to save config: {ex.Message}");
+        }
+    }
+
+    public int GetTune(string wilaya, string prayerKey)
+    {
+        if (TuneByWilaya.TryGetValue(wilaya, out var tunes) && tunes.TryGetValue(prayerKey.ToLowerInvariant(), out int val))
+        {
+            return val;
+        }
+        return 0;
+    }
+
+    public void SetTune(string wilaya, string prayerKey, int minutes)
+    {
+        if (!TuneByWilaya.TryGetValue(wilaya, out var tunes))
+        {
+            tunes = new Dictionary<string, int>();
+            TuneByWilaya[wilaya] = tunes;
+        }
+        tunes[prayerKey.ToLowerInvariant()] = minutes;
+    }
+}

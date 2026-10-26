@@ -1,0 +1,52 @@
+<Window x:Class="Mawaqit.Controls.VolumePopupWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Volume"
+        Width="80" Height="340"
+        WindowStyle="None"
+        AllowsTransparency="True"
+        Background="Transparent"
+        Topmost="True"
+        ShowInTaskbar="False"
+        ResizeMode="NoResize">
+
+    <Border x:Name="RootBorder" CornerRadius="10" BorderThickness="1">
+        <Border.Effect>
+            <DropShadowEffect BlurRadius="18" ShadowDepth="4" Opacity="0.35" Color="Black"/>
+        </Border.Effect>
+        <Grid Margin="8">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+
+            <!-- Close Button -->
+            <Button Grid.Row="0" x:Name="BtnClose" Content="✕"
+                    Width="20" Height="20"
+                    FontSize="11" FontWeight="Bold"
+                    Cursor="Hand" Click="BtnClose_Click"
+                    HorizontalAlignment="Right" VerticalAlignment="Top"
+                    Background="Transparent" BorderThickness="0"/>
+
+            <!-- Speaker Icon -->
+            <TextBlock Grid.Row="1" x:Name="TxtIcon" Text="🔊"
+                       FontSize="18" HorizontalAlignment="Center"
+                       Margin="0,4,0,2"/>
+
+            <!-- Percentage -->
+            <TextBlock Grid.Row="2" x:Name="TxtPct" Text="33%"
+                       FontSize="12" FontWeight="Bold"
+                       HorizontalAlignment="Center" Margin="0,0,0,10"/>
+
+            <!-- Vertical Slider -->
+            <Slider Grid.Row="3" x:Name="SliderVol"
+                    Orientation="Vertical"
+                    Minimum="0" Maximum="100"
+                    HorizontalAlignment="Center"
+                    Margin="0,0,0,12"
+                    ValueChanged="SliderVol_ValueChanged"/>
+        </Grid>
+    </Border>
+</Window>

@@ -1,0 +1,35 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <UseWPF>true</UseWPF>
+    <UseWindowsForms>true</UseWindowsForms>
+    <ApplicationIcon>Resources\logo.ico</ApplicationIcon>
+    <RootNamespace>Mawaqit</RootNamespace>
+    <AssemblyName>Mawaqit</AssemblyName>
+    <Version>2.2.1</Version>
+    <AssemblyVersion>2.2.1.0</AssemblyVersion>
+    <FileVersion>2.2.1.0</FileVersion>
+    <InformationalVersion>2.2.1</InformationalVersion>
+    <Product>Mawaqit Prayer Times</Product>
+    <Company></Company>
+    <Authors></Authors>
+    <PublishSingleFile>true</PublishSingleFile>
+    <IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Resource Include="Resources\logo.ico" />
+    <Resource Include="Resources\logo.png" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="Resources\Media\**\*.*">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <CopyToPublishDirectory>Always</CopyToPublishDirectory>
+    </None>
+  </ItemGroup>
+</Project>

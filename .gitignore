@@ -1,0 +1,14 @@
+## Build and Output directories
+bin/
+obj/
+publish/
+publish_sc/
+installer_output/
+*.user
+*.suo
+.vs/
+.vscode/
+
+## Temporary files
+*.log
+*.tmp

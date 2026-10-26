@@ -1,0 +1,386 @@
+<Window x:Class="Mawaqit.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="مواقيت الصلاة"
+        Width="680" Height="880"
+        MinWidth="600" MinHeight="800"
+        WindowStartupLocation="CenterScreen"
+        FontFamily="Segoe UI Variable Text, Segoe UI, Tahoma, sans-serif">
+
+    <Window.Resources>
+        <!-- Modern ScrollViewer Style -->
+        <Style TargetType="ScrollBar">
+            <Setter Property="Width" Value="8"/>
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ScrollBar">
+                        <Grid>
+                            <Track x:Name="PART_Track" IsDirectionReversed="True">
+                                <Track.Thumb>
+                                    <Thumb Background="#555555">
+                                        <Thumb.Template>
+                                            <ControlTemplate TargetType="Thumb">
+                                                <Border CornerRadius="4" Background="{TemplateBinding Background}"/>
+                                            </ControlTemplate>
+                                        </Thumb.Template>
+                                    </Thumb>
+                                </Track.Thumb>
+                            </Track>
+                        </Grid>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Rounded Button Style -->
+        <Style x:Key="RoundedButtonStyle" TargetType="Button">
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="Padding" Value="14,6"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="border" Background="{TemplateBinding Background}" CornerRadius="6" Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Modern TabItem Style -->
+        <Style x:Key="ModernTabItem" TargetType="TabItem">
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="Padding" Value="16,8"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="TabItem">
+                        <Border x:Name="tabBorder" Background="{TemplateBinding Background}" CornerRadius="8" Margin="0,0,8,0" Padding="{TemplateBinding Padding}">
+                            <ContentPresenter ContentSource="Header" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </Window.Resources>
+
+    <Grid x:Name="RootGrid">
+        <Grid.RowDefinitions>
+            <!-- Header -->
+            <RowDefinition Height="Auto"/>
+            <!-- Main Content (Tabs) -->
+            <RowDefinition Height="*"/>
+            <!-- Status Bar -->
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- HEADER SECTION -->
+        <Border Grid.Row="0" Margin="22,16,22,6">
+            <StackPanel>
+                <Grid>
+                    <!-- Temperature & Weather (Left) -->
+                    <StackPanel x:Name="PnlWeather" Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Left">
+                        <Image x:Name="ImgWeatherIcon" Width="22" Height="22" Margin="0,0,6,0"
+                               VerticalAlignment="Center" RenderOptions.BitmapScalingMode="HighQuality"/>
+                        <TextBlock x:Name="TxtTemperature" Text="--°C"
+                                   FontSize="14" FontWeight="Bold"
+                                   VerticalAlignment="Center"/>
+                    </StackPanel>
+
+                    <!-- App Title (Right) -->
+                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Right">
+                        <Image x:Name="ImgHeaderLogo" Width="28" Height="28" Margin="0,0,8,0"
+                               RenderOptions.BitmapScalingMode="HighQuality" VerticalAlignment="Center"/>
+                        <TextBlock x:Name="TxtAppTitle" Text="مواقيت الصلاة"
+                                   FontSize="22" FontWeight="Bold"
+                                   VerticalAlignment="Center"/>
+                    </StackPanel>
+                </Grid>
+
+                <Grid Margin="0,4,0,0">
+                    <!-- Gregorian & Hijri Date (Left) -->
+                    <StackPanel HorizontalAlignment="Left" VerticalAlignment="Center">
+                        <TextBlock x:Name="TxtHijriDate" Text="" FontSize="11" Margin="0,0,0,1"/>
+                        <TextBlock x:Name="TxtGregorianDate" Text="" FontSize="11"/>
+                    </StackPanel>
+
+                    <!-- Location (Right) -->
+                    <TextBlock x:Name="TxtLocationHeader" Text="📍 الجزائر"
+                               FontSize="12" FontWeight="SemiBold"
+                               HorizontalAlignment="Right" VerticalAlignment="Center"/>
+                </Grid>
+            </StackPanel>
+        </Border>
+
+        <!-- TAB CONTROL -->
+        <TabControl Grid.Row="1" x:Name="MainTabs"
+                    Margin="16,6,16,8"
+                    Background="Transparent"
+                    BorderThickness="0">
+
+            <!-- TAB 1: PRAYER TIMES -->
+            <TabItem x:Name="TabPrayerTimes" Header="🕰️ مواقيت الصلاة" Style="{StaticResource ModernTabItem}">
+                <Grid Margin="6,10,6,6">
+                    <Grid.RowDefinitions>
+                        <!-- Next Prayer Banner -->
+                        <RowDefinition Height="Auto"/>
+                        <!-- Location & Refresh Row -->
+                        <RowDefinition Height="Auto"/>
+                        <!-- Prayer Cards List -->
+                        <RowDefinition Height="*"/>
+                        <!-- Time Tuning Card -->
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+
+                    <!-- Banner: Next Prayer -->
+                    <Border Grid.Row="0" x:Name="BannerNextPrayer"
+                            Height="68" CornerRadius="8"
+                            Margin="0,0,0,10">
+                        <TextBlock x:Name="TxtBannerNext"
+                                   Text="جاري تحميل مواقيت الصلاة..."
+                                   FontSize="15" FontWeight="Bold"
+                                   VerticalAlignment="Center" HorizontalAlignment="Center"
+                                   TextAlignment="Center"/>
+                    </Border>
+
+                    <!-- Current Location & Refresh -->
+                    <Grid Grid.Row="1" Margin="0,0,0,10">
+                        <Button x:Name="BtnRefresh" Content="🔄 تحديث"
+                                Style="{StaticResource RoundedButtonStyle}"
+                                HorizontalAlignment="Left" Click="BtnRefresh_Click"/>
+
+                        <TextBlock x:Name="TxtCurrentLocRow" Text="الموقع الحالي: الجزائر"
+                                   FontSize="12" FontWeight="SemiBold"
+                                   HorizontalAlignment="Right" VerticalAlignment="Center"/>
+                    </Grid>
+
+                    <!-- Prayer Cards -->
+                    <ItemsControl Grid.Row="2" x:Name="PrayerCardsList">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Border Margin="0,3" CornerRadius="8" BorderThickness="1"
+                                        Background="{Binding CardBackground}"
+                                        BorderBrush="{Binding CardBorder}">
+                                    <Grid Height="54" Margin="16,0">
+                                        <!-- Prayer Icon -->
+                                        <TextBlock Text="{Binding Icon}" FontSize="20"
+                                                   VerticalAlignment="Center" HorizontalAlignment="Left"/>
+
+                                        <!-- Prayer Name & Time -->
+                                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center">
+                                            <TextBlock Text="{Binding DisplayName}"
+                                                       FontSize="15" FontWeight="Bold"
+                                                       Foreground="{Binding TextColor}"
+                                                       VerticalAlignment="Center" Margin="0,0,16,0"/>
+                                            <TextBlock Text="{Binding TimeString}"
+                                                       FontSize="18" FontWeight="Bold"
+                                                       Foreground="{Binding TextColor}"
+                                                       VerticalAlignment="Center"/>
+                                        </StackPanel>
+                                    </Grid>
+                                </Border>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+
+                    <!-- Manual Time Tuning Card -->
+                    <Border Grid.Row="3" x:Name="CardTuningOuter"
+                            CornerRadius="8" BorderThickness="1"
+                            Margin="0,8,0,0">
+                        <StackPanel Margin="12,10">
+                            <TextBlock x:Name="TxtTuneTitle"
+                                       Text="⏱️ تعديل المواقيت يدوياً بالدقائق (+/-) - خاص بالولاية الحالية"
+                                       FontSize="11" FontWeight="Bold"
+                                       HorizontalAlignment="Right" Margin="0,0,0,8"/>
+
+                            <UniformGrid x:Name="GridTuneInputs" Columns="5" Margin="0,0,0,10">
+                                <!-- Isha -->
+                                <StackPanel Margin="2,0" HorizontalAlignment="Center">
+                                    <TextBlock x:Name="LblTuneIsha" Text="العشاء" FontSize="10" FontWeight="SemiBold" HorizontalAlignment="Center"/>
+                                    <TextBox x:Name="TxtTuneIsha" Text="0" Width="48" Height="28" TextAlignment="Center" VerticalContentAlignment="Center" Margin="0,4,0,0"/>
+                                </StackPanel>
+                                <!-- Maghrib -->
+                                <StackPanel Margin="2,0" HorizontalAlignment="Center">
+                                    <TextBlock x:Name="LblTuneMaghrib" Text="المغرب" FontSize="10" FontWeight="SemiBold" HorizontalAlignment="Center"/>
+                                    <TextBox x:Name="TxtTuneMaghrib" Text="0" Width="48" Height="28" TextAlignment="Center" VerticalContentAlignment="Center" Margin="0,4,0,0"/>
+                                </StackPanel>
+                                <!-- Asr -->
+                                <StackPanel Margin="2,0" HorizontalAlignment="Center">
+                                    <TextBlock x:Name="LblTuneAsr" Text="العصر" FontSize="10" FontWeight="SemiBold" HorizontalAlignment="Center"/>
+                                    <TextBox x:Name="TxtTuneAsr" Text="0" Width="48" Height="28" TextAlignment="Center" VerticalContentAlignment="Center" Margin="0,4,0,0"/>
+                                </StackPanel>
+                                <!-- Dhuhr -->
+                                <StackPanel Margin="2,0" HorizontalAlignment="Center">
+                                    <TextBlock x:Name="LblTuneDhuhr" Text="الظهر" FontSize="10" FontWeight="SemiBold" HorizontalAlignment="Center"/>
+                                    <TextBox x:Name="TxtTuneDhuhr" Text="0" Width="48" Height="28" TextAlignment="Center" VerticalContentAlignment="Center" Margin="0,4,0,0"/>
+                                </StackPanel>
+                                <!-- Fajr -->
+                                <StackPanel Margin="2,0" HorizontalAlignment="Center">
+                                    <TextBlock x:Name="LblTuneFajr" Text="الفجر" FontSize="10" FontWeight="SemiBold" HorizontalAlignment="Center"/>
+                                    <TextBox x:Name="TxtTuneFajr" Text="0" Width="48" Height="28" TextAlignment="Center" VerticalContentAlignment="Center" Margin="0,4,0,0"/>
+                                </StackPanel>
+                            </UniformGrid>
+
+                            <Button x:Name="BtnApplyTune" Content="تأكيد التعديل"
+                                    Style="{StaticResource RoundedButtonStyle}"
+                                    Height="32" Click="BtnApplyTune_Click"/>
+                        </StackPanel>
+                    </Border>
+                </Grid>
+            </TabItem>
+
+            <!-- TAB 2: SETTINGS -->
+            <TabItem x:Name="TabSettings" Header="⚙️ الإعدادات" Style="{StaticResource ModernTabItem}">
+                <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+                    <StackPanel Margin="6,10,10,16">
+
+                        <!-- SECTION: LOCATION -->
+                        <TextBlock x:Name="SecLocationTitle" Text="📍 الموقع" FontSize="13" FontWeight="Bold" Margin="4,6,4,4"/>
+                        <Border x:Name="CardLocation" CornerRadius="8" BorderThickness="1" Margin="0,0,0,10">
+                            <Grid Margin="14,10">
+                                <TextBlock x:Name="LblWilaya" Text="الولاية:" FontSize="12" FontWeight="SemiBold"
+                                           VerticalAlignment="Center" HorizontalAlignment="Left"/>
+                                <ComboBox x:Name="CmbWilaya" Width="260" Height="30"
+                                          HorizontalAlignment="Right"
+                                          IsEditable="True"
+                                          IsTextSearchEnabled="True"
+                                          SelectionChanged="CmbWilaya_SelectionChanged"
+                                          KeyUp="CmbWilaya_KeyUp"/>
+                            </Grid>
+                        </Border>
+
+                        <!-- SECTION: ADHAN -->
+                        <TextBlock x:Name="SecAdhanTitle" Text="🔊 الأذان" FontSize="13" FontWeight="Bold" Margin="4,6,4,4"/>
+                        <Border x:Name="CardAdhan" CornerRadius="8" BorderThickness="1" Margin="0,0,0,10">
+                            <StackPanel Margin="14,10">
+                                <CheckBox x:Name="ChkAdhanEnable" Content="تشغيل الأذان وقت الصلاة"
+                                          FontSize="12" FontWeight="SemiBold"
+                                          Checked="ChkAdhanEnable_Changed" Unchecked="ChkAdhanEnable_Changed"/>
+
+                                <Grid Margin="0,8,0,0">
+                                    <TextBlock x:Name="TxtAdhanFile" Text="adhan.mp3" FontSize="11"
+                                               VerticalAlignment="Center" HorizontalAlignment="Left" TextTrimming="CharacterEllipsis" MaxWidth="320"/>
+
+                                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                                        <Button x:Name="BtnPickAdhan" Content="📂 اختيار ملف MP3"
+                                                Style="{StaticResource RoundedButtonStyle}"
+                                                Click="BtnPickAdhan_Click" Margin="0,0,6,0"/>
+                                        <Button x:Name="BtnTestAdhan" Content="▶ تجربة"
+                                                Style="{StaticResource RoundedButtonStyle}"
+                                                Click="BtnTestAdhan_Click"/>
+                                    </StackPanel>
+                                </Grid>
+                            </StackPanel>
+                        </Border>
+
+                        <!-- SECTION: REMINDER -->
+                        <TextBlock x:Name="SecReminderTitle" Text="⏰ التذكير قبل الأذان" FontSize="13" FontWeight="Bold" Margin="4,6,4,4"/>
+                        <Border x:Name="CardReminder" CornerRadius="8" BorderThickness="1" Margin="0,0,0,10">
+                            <StackPanel Margin="14,10">
+                                <CheckBox x:Name="ChkReminderEnable" Content="التذكير قبل موعد الأذان"
+                                          FontSize="12" FontWeight="SemiBold"
+                                          Checked="ChkReminderEnable_Changed" Unchecked="ChkReminderEnable_Changed"/>
+
+                                <Grid Margin="0,8,0,0">
+                                    <TextBlock x:Name="LblMinutesBefore" Text="دقائق قبل الأذان:" FontSize="12" FontWeight="SemiBold"
+                                               VerticalAlignment="Center" HorizontalAlignment="Left"/>
+                                    <TextBox x:Name="TxtReminderMinutes" Width="60" Height="26"
+                                             Text="10" TextAlignment="Center" VerticalContentAlignment="Center"
+                                             HorizontalAlignment="Right" LostFocus="TxtReminderMinutes_LostFocus"/>
+                                </Grid>
+
+                                <Grid Margin="0,8,0,0">
+                                    <TextBlock x:Name="TxtReminderFile" Text="reminder.mp3" FontSize="11"
+                                               VerticalAlignment="Center" HorizontalAlignment="Left" TextTrimming="CharacterEllipsis" MaxWidth="320"/>
+
+                                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                                        <Button x:Name="BtnPickReminder" Content="📂 اختيار ملف MP3"
+                                                Style="{StaticResource RoundedButtonStyle}"
+                                                Click="BtnPickReminder_Click" Margin="0,0,6,0"/>
+                                        <Button x:Name="BtnTestReminder" Content="▶ تجربة"
+                                                Style="{StaticResource RoundedButtonStyle}"
+                                                Click="BtnTestReminder_Click"/>
+                                    </StackPanel>
+                                </Grid>
+                            </StackPanel>
+                        </Border>
+
+                        <!-- SECTION: NOTIFICATIONS -->
+                        <TextBlock x:Name="SecNotificationsTitle" Text="🔔 الإشعارات" FontSize="13" FontWeight="Bold" Margin="4,6,4,4"/>
+                        <Border x:Name="CardNotifications" CornerRadius="8" BorderThickness="1" Margin="0,0,0,10">
+                            <StackPanel Margin="14,10">
+                                <CheckBox x:Name="ChkAdhanPopup" Content="إشعار عند دخول وقت الأذان"
+                                          FontSize="12" FontWeight="SemiBold" Margin="0,0,0,6"
+                                          Checked="ChkAdhanPopup_Changed" Unchecked="ChkAdhanPopup_Changed"/>
+                                <CheckBox x:Name="ChkReminderPopup" Content="إشعار التذكير قبل الأذان"
+                                          FontSize="12" FontWeight="SemiBold"
+                                          Checked="ChkReminderPopup_Changed" Unchecked="ChkReminderPopup_Changed"/>
+                            </StackPanel>
+                        </Border>
+
+                        <!-- SECTION: TASKBAR WIDGET -->
+                        <TextBlock x:Name="SecTaskbarWidgetTitle" Text="⏱️ ودجت شريط المهام" FontSize="13" FontWeight="Bold" Margin="4,6,4,4"/>
+                        <Border x:Name="CardTaskbarWidget" CornerRadius="8" BorderThickness="1" Margin="0,0,0,10">
+                            <StackPanel Margin="14,10">
+                                <CheckBox x:Name="ChkTaskbarWidgetEnable" Content="إظهار عداد الصلاة على شريط المهام"
+                                          FontSize="12" FontWeight="SemiBold" Margin="0,0,0,8"
+                                          Checked="ChkTaskbarWidgetEnable_Changed" Unchecked="ChkTaskbarWidgetEnable_Changed"/>
+                                <CheckBox x:Name="ChkTaskbarWidgetShowSeconds" Content="إظهار الثواني في العداد (01:23:45)"
+                                          FontSize="12" FontWeight="SemiBold" Margin="16,0,0,10"
+                                          Checked="ChkTaskbarWidgetShowSeconds_Changed" Unchecked="ChkTaskbarWidgetShowSeconds_Changed"/>
+                                <Button x:Name="BtnResetTaskbarWidgetPos" Content="📍 محاذاة تلقائية بجانب علبة النظام"
+                                        Height="30" Width="260" HorizontalAlignment="Left" Margin="16,0,0,4"
+                                        Click="BtnResetTaskbarWidgetPos_Click"/>
+                            </StackPanel>
+                        </Border>
+
+                        <!-- SECTION: LANGUAGE -->
+                        <TextBlock x:Name="SecLanguageTitle" Text="🌐 اللغة" FontSize="13" FontWeight="Bold" Margin="4,6,4,4"/>
+                        <Border x:Name="CardLanguage" CornerRadius="8" BorderThickness="1" Margin="0,0,0,10">
+                            <StackPanel Margin="14,10">
+                                <RadioButton x:Name="RbLangAr" Content="العربية" FontSize="12" FontWeight="SemiBold" Margin="0,0,0,6"
+                                             Checked="RbLang_Checked"/>
+                                <RadioButton x:Name="RbLangEn" Content="English" FontSize="12" FontWeight="SemiBold"
+                                             Checked="RbLang_Checked"/>
+                            </StackPanel>
+                        </Border>
+
+                        <!-- SECTION: THEME -->
+                        <TextBlock x:Name="SecThemeTitle" Text="🎨 المظهر" FontSize="13" FontWeight="Bold" Margin="4,6,4,4"/>
+                        <Border x:Name="CardTheme" CornerRadius="8" BorderThickness="1" Margin="0,0,0,10">
+                            <StackPanel Margin="14,10">
+                                <RadioButton x:Name="RbThemeDark" Content="🌙 داكن" FontSize="12" FontWeight="SemiBold" Margin="0,0,0,6"
+                                             Checked="RbTheme_Checked"/>
+                                <RadioButton x:Name="RbThemeLight" Content="☀️ فاتح" FontSize="12" FontWeight="SemiBold"
+                                             Checked="RbTheme_Checked"/>
+                            </StackPanel>
+                        </Border>
+
+                        <!-- SECTION: STARTUP -->
+                        <TextBlock x:Name="SecStartupTitle" Text="🚀 بدء التشغيل" FontSize="13" FontWeight="Bold" Margin="4,6,4,4"/>
+                        <Border x:Name="CardStartup" CornerRadius="8" BorderThickness="1" Margin="0,0,0,10">
+                            <StackPanel Margin="14,10">
+                                <CheckBox x:Name="ChkStartup" Content="بدء التشغيل مع النظام"
+                                          FontSize="12" FontWeight="SemiBold"
+                                          Checked="ChkStartup_Changed" Unchecked="ChkStartup_Changed"/>
+                            </StackPanel>
+                        </Border>
+
+
+                    </StackPanel>
+                </ScrollViewer>
+            </TabItem>
+        </TabControl>
+
+        <!-- STATUS BAR -->
+        <Border Grid.Row="2" Margin="22,4,22,10">
+            <TextBlock x:Name="TxtStatus" Text="جاهز"
+                       FontSize="11" HorizontalAlignment="Right"/>
+        </Border>
+    </Grid>
+</Window>

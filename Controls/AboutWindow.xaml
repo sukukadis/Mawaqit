@@ -1,0 +1,121 @@
+<Window x:Class="Mawaqit.Controls.AboutWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="About Mawaqit"
+        Width="320" Height="380"
+        WindowStartupLocation="CenterOwner"
+        ResizeMode="NoResize"
+        WindowStyle="None"
+        AllowsTransparency="True"
+        Background="Transparent"
+        ShowInTaskbar="False"
+        FontFamily="Segoe UI Variable Text, Segoe UI, Tahoma, sans-serif">
+    
+    <Border x:Name="RootBorder" 
+            CornerRadius="18" 
+            BorderThickness="1"
+            MouseLeftButtonDown="RootBorder_MouseLeftButtonDown">
+        <Border.Effect>
+            <DropShadowEffect x:Name="RootShadow" BlurRadius="28" ShadowDepth="4" Opacity="0.4" Color="#000000"/>
+        </Border.Effect>
+
+        <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Margin="16,10">
+            <!-- App Logo (crescent & mosque emblem from app logo) -->
+            <Image x:Name="ImgLogo" 
+                   Width="84" Height="84" 
+                   HorizontalAlignment="Center" 
+                   Margin="0,10,0,10"
+                   RenderOptions.BitmapScalingMode="HighQuality"/>
+
+            <!-- App Title: Mawaqit (under the logo) -->
+            <TextBlock x:Name="TxtAppTitle" 
+                       Text="Mawaqit" 
+                       FontSize="24" FontWeight="Bold" 
+                       HorizontalAlignment="Center" 
+                       Margin="0,0,0,8"/>
+
+            <!-- Version Badge -->
+            <Border x:Name="BdVersion" 
+                    CornerRadius="10" 
+                    Padding="12,3" 
+                    BorderThickness="1"
+                    HorizontalAlignment="Center" 
+                    Margin="0,0,0,16">
+                <TextBlock x:Name="TxtVersion" 
+                           Text="Version 2.2.1" 
+                           FontSize="12" FontWeight="Normal" 
+                           HorizontalAlignment="Center"/>
+            </Border>
+
+            <!-- Thin Divider -->
+            <Separator x:Name="SepDivider" 
+                       Height="1" 
+                       Margin="26,0,26,14" 
+                       SnapsToDevicePixels="True"/>
+
+            <!-- Developer Credit (hidden to remove publisher name) -->
+            <TextBlock x:Name="TxtDevBy" 
+                       Visibility="Collapsed"
+                       FontSize="13.5" FontWeight="Normal" 
+                       HorizontalAlignment="Center" 
+                       Margin="0,0,0,4"/>
+
+            <!-- Copyright -->
+            <TextBlock x:Name="TxtCopyright" 
+                       Text="Copyright © 2026. All rights reserved." 
+                       FontSize="11.5" 
+                       HorizontalAlignment="Center" 
+                       Margin="0,0,0,14"/>
+
+            <!-- GitHub Pill Link in application green color -->
+            <Button x:Name="BtnGitHub" 
+                    Cursor="Hand" 
+                    ToolTip="https://github.com/fahed355"
+                    Click="BtnGitHub_Click"
+                    HorizontalAlignment="Center" 
+                    Margin="0,0,0,12"
+                    BorderThickness="0" 
+                    Padding="18,5"
+                    Background="#10B981"
+                    Foreground="#FFFFFF">
+                <Button.Template>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="bd" 
+                                Background="{TemplateBinding Background}" 
+                                CornerRadius="12" 
+                                Padding="{TemplateBinding Padding}">
+                            <TextBlock x:Name="txt" 
+                                       Text="GitHub" 
+                                       FontSize="12.5" FontWeight="SemiBold" 
+                                       Foreground="{TemplateBinding Foreground}"
+                                       HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                    </ControlTemplate>
+                </Button.Template>
+            </Button>
+
+            <!-- Close Pill Button -->
+            <Button x:Name="BtnClose" 
+                    Content="Close" 
+                    Cursor="Hand" 
+                    Click="BtnClose_Click"
+                    Width="92" Height="32" 
+                    HorizontalAlignment="Center" 
+                    Margin="0,0,0,14"
+                    BorderThickness="1"
+                    FontSize="12.5" FontWeight="SemiBold">
+                <Button.Template>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="bd" 
+                                Background="{TemplateBinding Background}" 
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="14">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                    </ControlTemplate>
+                </Button.Template>
+            </Button>
+        </StackPanel>
+    </Border>
+</Window>

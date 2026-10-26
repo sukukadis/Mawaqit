@@ -1,0 +1,9 @@
+<Application x:Class="Mawaqit.App"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:local="clr-namespace:Mawaqit"
+             ShutdownMode="OnExplicitShutdown">
+    <Application.Resources>
+        <!-- Global App Resources -->
+    </Application.Resources>
+</Application>
