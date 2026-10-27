@@ -98,6 +98,8 @@
                 BorderThickness="0"
                 Background="Transparent"
                 Cursor="Hand"
+                ToolTip="{x:Null}"
+                ToolTipService.IsEnabled="False"
                 PreviewMouseLeftButtonDown="RootBorder_PreviewMouseLeftButtonDown"
                 PreviewMouseLeftButtonUp="RootBorder_PreviewMouseLeftButtonUp"
                 MouseMove="RootBorder_MouseMove"

@@ -113,9 +113,6 @@ public partial class TaskbarWidgetWindow : Window
     private bool _win32IsDown;
     private bool _win32HasDragged;
 
-    private string _currentPrayerTip = "";
-    private string _currentWeatherTip = "";
-
     public event Action<bool>? VisibilityChanged;
 
     public TaskbarWidgetWindow(
@@ -136,6 +133,8 @@ public partial class TaskbarWidgetWindow : Window
         _onCloseApp = onCloseApp ?? (() => Application.Current.Shutdown());
 
         InitializeComponent();
+        System.Windows.Controls.ToolTipService.SetIsEnabled(RootBorder, false);
+        RootBorder.ToolTip = null;
 
         ApplyLanguage(_config.Language);
         SyncSettingsToggles();
@@ -945,31 +944,11 @@ public partial class TaskbarWidgetWindow : Window
             TxtCountdown.Text = showSec ? $"{h:D2}:{m:D2}:{s:D2}" : $"{h:D2}:{m:D2}";
         }
 
-        _currentPrayerTip = $"{prayerName} {prayerTime} - {TxtTimerLabel.Text} {TxtCountdown.Text}";
-        UpdateWidgetToolTip();
     }
 
     public void UpdateWeatherData(WeatherResult? weather)
     {
-        if (weather != null && weather.Temperature.HasValue)
-        {
-            string cond = weather.GetConditionText(_config.Language);
-            _currentWeatherTip = $"{weather.Temperature.Value:0}°C {weather.WeatherIcon} ({cond})";
-        }
-        else
-        {
-            _currentWeatherTip = "";
-        }
-        UpdateWidgetToolTip();
-    }
-
-    private void UpdateWidgetToolTip()
-    {
-        string wilaya = _config.Language == "ar" ? _config.WilayaAr : _config.WilayaEn;
-        string tip = string.IsNullOrEmpty(_currentWeatherTip)
-            ? $"{_currentPrayerTip}\n📍 {wilaya}"
-            : $"{_currentPrayerTip}\n📍 {wilaya}: {_currentWeatherTip}";
-        RootBorder.ToolTip = tip;
+        // Weather and timer tooltip on hover has been removed
     }
 
     #endregion

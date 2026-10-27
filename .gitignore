@@ -12,3 +12,4 @@ installer_output/
 ## Temporary files
 *.log
 *.tmp
+*.zip
