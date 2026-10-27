@@ -223,7 +223,7 @@ public class Country
         new("جمهورية الهند", "India", "IN", "🇮🇳", 1, "الهند", "India"),
         new("جمهورية الصين الشعبية", "China", "CN", "🇨🇳", 3, "الصين", "China"),
         new("اليابان", "Japan", "JP", "🇯🇵", 3, "اليابان", "Japan"),
-        new("جمهورية كوريا", "South Korea", "KR", "🇰🇷", 3, "كوريا الجنوبية", "South Korea"),
+        new("جمهورية كوريا", "South Korea", "KR", "🇰🇷", 3, "كوريا الجنوبية", "كوريا", "Korea", "South Korea"),
         new("مملكة تايلاند", "Thailand", "TH", "🇹🇭", 3, "تايلاند", "Thailand"),
         new("جمهورية الفلبين", "Philippines", "PH", "🇵🇭", 3, "الفلبين", "Philippines"),
         new("جمهورية فيتنام", "Vietnam", "VN", "🇻🇳", 3, "فيتنام", "Vietnam"),
