@@ -1,5 +1,5 @@
 #define MyAppName "Mawaqit"
-#define MyAppVersion "2.2.3"
+#define MyAppVersion "2.2.4"
 #define MyAppExeName "Mawaqit.exe"
 #define MyAppId "8B3E42A1-94F5-4B82-B2A8-E4C2E9D68A11"
 
@@ -34,9 +34,9 @@ WizardStyle=modern
 ShowLanguageDialog=yes
 CloseApplications=yes
 CloseApplicationsFilter=Mawaqit.exe
-VersionInfoVersion=2.2.3.0
-VersionInfoTextVersion=2.2.3
-VersionInfoProductVersion=2.2.3.0
+VersionInfoVersion=2.2.4.0
+VersionInfoTextVersion=2.2.4
+VersionInfoProductVersion=2.2.4.0
 
 [Languages]
 Name: "arabic"; MessagesFile: "compiler:Languages\Arabic.isl"

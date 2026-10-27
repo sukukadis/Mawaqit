@@ -17,7 +17,7 @@ public static class LocationService
 
     static LocationService()
     {
-        Http.DefaultRequestHeaders.Add("User-Agent", "Mawaqit/2.2.3 LocationClient");
+        Http.DefaultRequestHeaders.Add("User-Agent", "Mawaqit/2.2.4 LocationClient");
     }
 
     /// <summary>
