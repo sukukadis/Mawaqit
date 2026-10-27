@@ -50,6 +50,24 @@ if (Test-Path $desktopLogo) {
     Write-Host "[OK] Synchronized logo.ico from Desktop." -ForegroundColor Green
 }
 
+# Detect current version from MawaqitSetup.iss
+$issContent = Get-Content "$ScriptDir\MawaqitSetup.iss" -Raw
+$appVersion = "2.2.3"
+if ($issContent -match '#define MyAppVersion "([^"]+)"') {
+    $appVersion = $matches[1]
+}
+Write-Host "[OK] Target Application Version: $appVersion" -ForegroundColor Green
+
+# Clean stale installer outputs from past versions
+$outputDir = Join-Path $ScriptDir "installer_output"
+if (Test-Path $outputDir) {
+    Get-ChildItem -Path $outputDir -Filter "*.exe" -ErrorAction SilentlyContinue |
+        Where-Object { $_.Name -notlike "*$appVersion*" } |
+        Remove-Item -Force
+} else {
+    New-Item -ItemType Directory -Path $outputDir -Force | Out-Null
+}
+
 # 2. Determine build modes (default: build both)
 $buildStandard = $true
 $buildStandalone = $true
@@ -121,9 +139,15 @@ Write-Host "====================================================" -ForegroundCol
 Write-Host "             BUILD COMPLETE SUCCESSFULLY!" -ForegroundColor Green
 Write-Host "====================================================" -ForegroundColor Green
 
-$outputDir = Join-Path $ScriptDir "installer_output"
-$installers = Get-ChildItem -Path $outputDir -Filter "*.exe" -ErrorAction SilentlyContinue
+$installers = Get-ChildItem -Path $outputDir -Filter "*$appVersion*.exe" -ErrorAction SilentlyContinue
 $desktopDir = [Environment]::GetFolderPath('Desktop')
+
+# Clean old versions from desktop to avoid clutter
+if (Test-Path $desktopDir) {
+    Get-ChildItem -Path $desktopDir -Filter "Mawaqit-*-Setup.exe" -ErrorAction SilentlyContinue |
+        Where-Object { $_.Name -notlike "*$appVersion*" } |
+        Remove-Item -Force
+}
 
 foreach ($file in $installers) {
     $sizeMb = [math]::Round($file.Length / 1048576, 2)
