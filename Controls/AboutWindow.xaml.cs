@@ -15,7 +15,7 @@ public partial class AboutWindow : Window
     {
         InitializeComponent();
 
-        TxtVersion.Text = $"Version {GetType().Assembly.GetName().Version?.ToString(3) ?? "2.2.1"}";
+        TxtVersion.Text = $"Version {GetType().Assembly.GetName().Version?.ToString(3) ?? "2.2.3"}";
         ApplyTheme(theme, isDark);
         LoadLogo();
 
@@ -173,7 +173,7 @@ public partial class AboutWindow : Window
     {
         try
         {
-            Process.Start(new ProcessStartInfo("https://github.com/fahed355")
+            Process.Start(new ProcessStartInfo("https://github.com/sukukadis/")
             {
                 UseShellExecute = true
             });

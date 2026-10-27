@@ -200,5 +200,5 @@ You can build the installer with one command or double-click:
    ```
 
 The compiled installers are saved in:
-- `installer_output\Mawaqit-2.0.0-Setup.exe` (Standard)
-- `installer_output\Mawaqit-2.0.0-Standalone-Setup.exe` (Standalone)
+- `installer_output\Mawaqit-2.2.3-Setup.exe` (Standard)
+- `installer_output\Mawaqit-2.2.3-Standalone-Setup.exe` (Standalone)
