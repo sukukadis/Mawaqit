@@ -25,7 +25,7 @@
 > - **العربية:** هذا التطبيق مخصص للعمل **في الجزائر فقط**، ويغطي مواقيت الصلاة لجميع ولايات الجزائر الـ 69 بالنسبة للدوائر والبلديات خارج الولايات يمكن إجراء تعديلات يدوية استناداً إلى الولاية الأقرب إليك 
 تُحسَب مواقيت الصلاة وفقاً لطريقة الحساب الرسمية المعتمدة لدى وزارة الشؤون الدينية
 
-A high-performance, modern Windows desktop application for Islamic prayer times in Algeria, remade in **C# (.NET 8 WPF)**.
+A high-performance, modern Windows desktop application for Islamic prayer times in Algeria, made in **C# (.NET 8 WPF)**.
 
 ---
 
