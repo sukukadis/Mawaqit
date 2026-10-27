@@ -557,7 +557,11 @@ public partial class MainWindow : Window
                 ? Country.AllCountries.OrderBy(c => c.NameAr, StringComparer.Create(new System.Globalization.CultureInfo("ar-SA"), false)).ToList()
                 : Country.AllCountries.OrderBy(c => c.NameEn, StringComparer.OrdinalIgnoreCase).ToList();
 
-            var list = _currentCountriesList.Select(c => c.DisplayName(lang)).ToList();
+            var list = _currentCountriesList.Select(c => new CountryViewModel
+            {
+                Country = c,
+                Name = isAr ? c.NameAr : c.NameEn
+            }).ToList();
             CmbCountry.ItemsSource = list;
 
             string target = isAr ? _config.CountryAr : _config.CountryEn;
@@ -1148,14 +1152,21 @@ public partial class MainWindow : Window
         if (_suppressCountryEvent) return;
 
         Country? country = null;
-        int idx = CmbCountry.SelectedIndex;
-        if (idx >= 0 && idx < _currentCountriesList.Count)
+        if (CmbCountry.SelectedItem is CountryViewModel cvm)
         {
-            country = _currentCountriesList[idx];
+            country = cvm.Country;
         }
-        else if (CmbCountry.SelectedItem is string selText)
+        else
         {
-            country = Country.FindCountry(selText);
+            int idx = CmbCountry.SelectedIndex;
+            if (idx >= 0 && idx < _currentCountriesList.Count)
+            {
+                country = _currentCountriesList[idx];
+            }
+            else if (CmbCountry.SelectedItem is string selText)
+            {
+                country = Country.FindCountry(selText);
+            }
         }
 
         if (country == null) return;

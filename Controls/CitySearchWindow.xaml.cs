@@ -14,6 +14,7 @@ public class SearchResultItem
     public Wilaya Location { get; set; } = null!;
     public string Title { get; set; } = "";
     public string Subtitle { get; set; } = "";
+    public ImageSource? FlagImage { get; set; }
 }
 
 public partial class CitySearchWindow : Window
@@ -184,13 +185,18 @@ public partial class CitySearchWindow : Window
             }
         }
 
-        var items = combined.Select(w => new SearchResultItem
+        var items = combined.Select(w =>
         {
-            Location = w,
-            Title = isAr ? w.NameAr : w.NameEn,
-            Subtitle = isAr
-                ? $"{w.CountryAr} • {w.Latitude:F2}°, {w.Longitude:F2}°"
-                : $"{w.CountryEn} • {w.Latitude:F2}°, {w.Longitude:F2}°"
+            var country = Country.FindCountry(w.CountryEn) ?? Country.FindCountry(w.CountryAr);
+            return new SearchResultItem
+            {
+                Location = w,
+                Title = isAr ? w.NameAr : w.NameEn,
+                Subtitle = isAr
+                    ? $"{w.CountryAr} • {w.Latitude:F2}°, {w.Longitude:F2}°"
+                    : $"{w.CountryEn} • {w.Latitude:F2}°, {w.Longitude:F2}°",
+                FlagImage = country?.FlagImage
+            };
         }).ToList();
 
         LstResults.ItemsSource = items;

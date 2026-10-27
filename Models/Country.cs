@@ -1,8 +1,81 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Windows.Media;
+using System.Windows.Media.Imaging;
 
 namespace Mawaqit.Models;
+
+public static class FlagHelper
+{
+    private static readonly Dictionary<string, BitmapImage?> _cache = new(StringComparer.OrdinalIgnoreCase);
+
+    public static BitmapImage? GetFlagImage(string? countryCode)
+    {
+        if (string.IsNullOrWhiteSpace(countryCode)) return null;
+        string code = countryCode.Trim().ToLowerInvariant();
+
+        if (_cache.TryGetValue(code, out var cached))
+            return cached;
+
+        BitmapImage? result = null;
+
+        // 1. Try WPF Pack URI embedded resource
+        try
+        {
+            var uri = new Uri($"pack://application:,,,/Resources/Flags/{code}.png", UriKind.Absolute);
+            var bmp = new BitmapImage();
+            bmp.BeginInit();
+            bmp.CacheOption = BitmapCacheOption.OnLoad;
+            bmp.UriSource = uri;
+            bmp.EndInit();
+            bmp.Freeze();
+            result = bmp;
+        }
+        catch { }
+
+        // 2. Fallback to application base directory / Resources / Flags
+        if (result == null)
+        {
+            try
+            {
+                string[] candidates = new[]
+                {
+                    Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Resources", "Flags", $"{code}.png"),
+                    Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Flags", $"{code}.png")
+                };
+
+                foreach (var path in candidates)
+                {
+                    if (File.Exists(path))
+                    {
+                        var bmp = new BitmapImage();
+                        bmp.BeginInit();
+                        bmp.CacheOption = BitmapCacheOption.OnLoad;
+                        bmp.UriSource = new Uri(path, UriKind.Absolute);
+                        bmp.EndInit();
+                        bmp.Freeze();
+                        result = bmp;
+                        break;
+                    }
+                }
+            }
+            catch { }
+        }
+
+        _cache[code] = result;
+        return result;
+    }
+}
+
+public class CountryViewModel
+{
+    public Country Country { get; set; } = null!;
+    public string Name { get; set; } = "";
+    public ImageSource? FlagImage => Country.FlagImage;
+    public override string ToString() => Name;
+}
 
 public class Country
 {
@@ -13,8 +86,10 @@ public class Country
     public int DefaultMethod { get; set; } = 3;
     public string[] Aliases { get; set; } = Array.Empty<string>();
 
-    public string DisplayNameAr => $"{Flag} {NameAr}";
-    public string DisplayNameEn => $"{Flag} {NameEn}";
+    public ImageSource? FlagImage => FlagHelper.GetFlagImage(Code);
+
+    public string DisplayNameAr => NameAr;
+    public string DisplayNameEn => NameEn;
     public string DisplayName(string lang) => lang == "ar" ? DisplayNameAr : DisplayNameEn;
 
     public Country() { }

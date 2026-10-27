@@ -60,6 +60,7 @@ Name: "startup"; Description: "{cm:StartWithWindows}"; GroupDescription: "{cm:St
 [Files]
 Source: "{#SourceFolder}\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs; Excludes: "logo.png,logo.ico,*.pdb"
 Source: "Resources\Media\*"; DestDir: "{app}\Resources\Media"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "Resources\Flags\*"; DestDir: "{app}\Resources\Flags"; Flags: ignoreversion recursesubdirs createallsubdirs
 
 [Icons]
 Name: "{autoprograms}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; WorkingDir: "{app}"

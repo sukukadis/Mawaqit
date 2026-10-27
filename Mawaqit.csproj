@@ -24,9 +24,14 @@
   <ItemGroup>
     <Resource Include="Resources\logo.ico" />
     <Resource Include="Resources\logo.png" />
+    <Resource Include="Resources\Flags\**\*.png" />
   </ItemGroup>
 
   <ItemGroup>
+    <None Include="Resources\Flags\**\*.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </None>
     <None Include="Resources\Media\**\*.*">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       <CopyToPublishDirectory>Always</CopyToPublishDirectory>

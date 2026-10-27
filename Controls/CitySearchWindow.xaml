@@ -130,13 +130,28 @@
                          MouseDoubleClick="LstResults_MouseDoubleClick">
                     <ListBox.ItemTemplate>
                         <DataTemplate>
-                            <Grid Margin="2,1">
-                                <Grid.RowDefinitions>
-                                    <RowDefinition Height="Auto"/>
-                                    <RowDefinition Height="Auto"/>
-                                </Grid.RowDefinitions>
-                                <TextBlock Grid.Row="0" Text="{Binding Title}" FontSize="13" FontWeight="Bold" Foreground="{DynamicResource AccentBrush}"/>
-                                <TextBlock Grid.Row="1" Text="{Binding Subtitle}" FontSize="11" Foreground="{DynamicResource TextMutedBrush}" Margin="0,2,0,0"/>
+                            <Grid Margin="2,2">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+
+                                <!-- Flag Image -->
+                                <Border Grid.Column="0" Width="24" Height="16" CornerRadius="2" Margin="0,0,10,0"
+                                        BorderThickness="1" BorderBrush="#33888888" VerticalAlignment="Center" ClipToBounds="True">
+                                    <Image Source="{Binding FlagImage}" Width="24" Height="16" Stretch="UniformToFill"
+                                           RenderOptions.BitmapScalingMode="HighQuality"/>
+                                </Border>
+
+                                <!-- Text Details -->
+                                <Grid Grid.Column="1" VerticalAlignment="Center">
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="Auto"/>
+                                    </Grid.RowDefinitions>
+                                    <TextBlock Grid.Row="0" Text="{Binding Title}" FontSize="13" FontWeight="Bold" Foreground="{DynamicResource AccentBrush}"/>
+                                    <TextBlock Grid.Row="1" Text="{Binding Subtitle}" FontSize="11" Foreground="{DynamicResource TextMutedBrush}" Margin="0,2,0,0"/>
+                                </Grid>
                             </Grid>
                         </DataTemplate>
                     </ListBox.ItemTemplate>

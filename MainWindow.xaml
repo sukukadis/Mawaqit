@@ -249,9 +249,23 @@
                                                VerticalAlignment="Center" HorizontalAlignment="Left"/>
                                     <ComboBox x:Name="CmbCountry" Width="270" Height="30"
                                               HorizontalAlignment="Right"
-                                              IsEditable="True"
+                                              IsEditable="False"
                                               IsTextSearchEnabled="True"
-                                              SelectionChanged="CmbCountry_SelectionChanged"/>
+                                              TextSearch.TextPath="Name"
+                                              SelectionChanged="CmbCountry_SelectionChanged">
+                                        <ComboBox.ItemTemplate>
+                                            <DataTemplate>
+                                                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                                    <Border Width="22" Height="15" CornerRadius="2" Margin="0,0,8,0"
+                                                            BorderThickness="1" BorderBrush="#33888888" VerticalAlignment="Center" ClipToBounds="True">
+                                                        <Image Source="{Binding FlagImage}" Width="22" Height="15" Stretch="UniformToFill"
+                                                               RenderOptions.BitmapScalingMode="HighQuality"/>
+                                                    </Border>
+                                                    <TextBlock Text="{Binding Name}" VerticalAlignment="Center" FontSize="12.5"/>
+                                                </StackPanel>
+                                            </DataTemplate>
+                                        </ComboBox.ItemTemplate>
+                                    </ComboBox>
                                 </Grid>
 
                                 <!-- City / Region Selection -->
