@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Windows;
 using System.Windows.Input;
 using System.Windows.Media;
@@ -8,15 +9,32 @@ using Mawaqit.Services;
 
 namespace Mawaqit.Controls;
 
+public class SearchResultItem
+{
+    public Wilaya Location { get; set; } = null!;
+    public string Title { get; set; } = "";
+    public string Subtitle { get; set; } = "";
+}
+
 public partial class CitySearchWindow : Window
 {
     private readonly string _lang;
+    private readonly ThemePalette _theme;
+    private readonly bool _isDark;
     public Wilaya? SelectedLocation { get; private set; }
 
-    public CitySearchWindow(string initialQuery, string lang, ThemePalette? theme = null)
+    public CitySearchWindow(string initialQuery, string lang, ThemePalette? theme = null, bool isDark = true)
     {
         _lang = lang;
+        _isDark = isDark;
+        _theme = theme ?? (isDark ? ThemePalette.Dark : ThemePalette.Light);
+
+        // Apply theme resources before InitializeComponent
+        ApplyThemeResources(_theme, _isDark);
+
         InitializeComponent();
+
+        ApplyThemeElements(_theme, _isDark);
 
         bool isAr = lang == "ar";
         FlowDirection = isAr ? System.Windows.FlowDirection.RightToLeft : System.Windows.FlowDirection.LeftToRight;
@@ -26,30 +44,87 @@ public partial class CitySearchWindow : Window
         BtnSelect.Content = isAr ? "اختيار" : "Select";
         BtnCancel.Content = isAr ? "إلغاء" : "Cancel";
 
-        if (theme != null)
-        {
-            RootBorder.Background = theme.Card;
-            RootBorder.BorderBrush = theme.Border;
-            BtnSelect.Background = theme.Accent;
-        }
-
         TxtSearchQuery.Text = initialQuery;
-        if (!string.IsNullOrWhiteSpace(initialQuery))
+
+        Loaded += async (s, e) =>
         {
-            Loaded += async (s, e) =>
+            try
+            {
+                DwmHelper.EnableWin11Styling(this, _isDark, true);
+            }
+            catch { }
+
+            if (!string.IsNullOrWhiteSpace(initialQuery))
             {
                 TxtSearchQuery.SelectAll();
                 TxtSearchQuery.Focus();
                 await PerformSearchAsync(initialQuery);
-            };
+            }
+            else
+            {
+                TxtSearchQuery.Focus();
+            }
+        };
+    }
+
+    private void ApplyThemeResources(ThemePalette theme, bool isDark)
+    {
+        Resources["CardBrush"] = theme.Card;
+        Resources["BorderBrush"] = theme.Border;
+        Resources["TextBrush"] = theme.Text;
+        Resources["TextMutedBrush"] = theme.TextMuted;
+        Resources["AccentBrush"] = theme.Accent;
+        Resources["AccentHoverBrush"] = theme.AccentHover;
+        Resources["EntryBgBrush"] = theme.EntryBg;
+        Resources["BtnBgBrush"] = theme.BtnBg;
+        Resources["BtnFgBrush"] = theme.BtnFg;
+        Resources["Btn2BgBrush"] = theme.Btn2Bg;
+        Resources["Btn2FgBrush"] = theme.Btn2Fg;
+        Resources["Btn2HoverBrush"] = theme.Btn2Hover;
+
+        if (isDark)
+        {
+            Resources["HoverBrush"] = theme.CardAlt;
+            Resources["SelectedBrush"] = ThemePalette.HexToBrush("#1E382B"); // Rich dark emerald tint
         }
         else
         {
-            Loaded += (s, e) =>
-            {
-                TxtSearchQuery.Focus();
-            };
+            Resources["HoverBrush"] = ThemePalette.HexToBrush("#EBEBEB");
+            Resources["SelectedBrush"] = ThemePalette.HexToBrush("#D1FAE5"); // Soft emerald tint
         }
+    }
+
+    private void ApplyThemeElements(ThemePalette theme, bool isDark)
+    {
+        RootBorder.Background = theme.Card;
+        RootBorder.BorderBrush = theme.Border;
+        RootShadow.Opacity = isDark ? 0.45 : 0.15;
+
+        TxtTitle.Foreground = theme.Text;
+
+        BtnClose.Background = theme.Btn2Bg;
+        BtnClose.Foreground = theme.Btn2Fg;
+        BtnClose.BorderBrush = theme.Border;
+
+        TxtSearchQuery.Background = theme.EntryBg;
+        TxtSearchQuery.Foreground = theme.Text;
+        TxtSearchQuery.BorderBrush = theme.Border;
+        TxtSearchQuery.CaretBrush = theme.Text;
+
+        BtnSearch.Background = theme.Accent;
+        BtnSearch.Foreground = theme.BtnFg;
+
+        BdResultsList.Background = theme.EntryBg;
+        BdResultsList.BorderBrush = theme.Border;
+
+        TxtStatus.Foreground = theme.TextMuted;
+
+        BtnCancel.Background = theme.Btn2Bg;
+        BtnCancel.Foreground = theme.Btn2Fg;
+        BtnCancel.BorderBrush = theme.Border;
+
+        BtnSelect.Background = theme.Accent;
+        BtnSelect.Foreground = theme.BtnFg;
     }
 
     private void RootBorder_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
@@ -84,8 +159,10 @@ public partial class CitySearchWindow : Window
         BtnSearch.IsEnabled = false;
         TxtStatus.Text = _lang == "ar" ? "جاري البحث..." : "Searching...";
 
+        bool isAr = _lang == "ar";
+
         // 1. Search in local offline locations first
-        var localMatches = Wilaya.FilterWilayas(query, _lang == "ar");
+        var localMatches = Wilaya.FilterWilayas(query, isAr);
 
         // 2. Query online geocoding API for worldwide coverage
         var onlineMatches = await LocationService.SearchCitiesAsync(query, _lang);
@@ -107,17 +184,26 @@ public partial class CitySearchWindow : Window
             }
         }
 
-        LstResults.ItemsSource = combined;
+        var items = combined.Select(w => new SearchResultItem
+        {
+            Location = w,
+            Title = isAr ? w.NameAr : w.NameEn,
+            Subtitle = isAr
+                ? $"{w.CountryAr} • {w.Latitude:F2}°, {w.Longitude:F2}°"
+                : $"{w.CountryEn} • {w.Latitude:F2}°, {w.Longitude:F2}°"
+        }).ToList();
+
+        LstResults.ItemsSource = items;
         BtnSearch.IsEnabled = true;
 
-        if (combined.Count > 0)
+        if (items.Count > 0)
         {
             LstResults.SelectedIndex = 0;
-            TxtStatus.Text = _lang == "ar" ? $"تم العثور على {combined.Count} نتيجة" : $"Found {combined.Count} results";
+            TxtStatus.Text = isAr ? $"تم العثور على {items.Count} نتيجة" : $"Found {items.Count} results";
         }
         else
         {
-            TxtStatus.Text = _lang == "ar" ? "لم يتم العثور على نتائج" : "No results found";
+            TxtStatus.Text = isAr ? "لم يتم العثور على نتائج" : "No results found";
         }
     }
 
@@ -133,7 +219,13 @@ public partial class CitySearchWindow : Window
 
     private void ConfirmSelection()
     {
-        if (LstResults.SelectedItem is Wilaya w)
+        if (LstResults.SelectedItem is SearchResultItem item)
+        {
+            SelectedLocation = item.Location;
+            DialogResult = true;
+            Close();
+        }
+        else if (LstResults.SelectedItem is Wilaya w)
         {
             SelectedLocation = w;
             DialogResult = true;
@@ -158,3 +250,4 @@ public partial class CitySearchWindow : Window
         Close();
     }
 }
+

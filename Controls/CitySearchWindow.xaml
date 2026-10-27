@@ -2,7 +2,7 @@
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="Search City"
-        Width="440" Height="480"
+        Width="460" Height="500"
         WindowStartupLocation="CenterOwner"
         ResizeMode="NoResize"
         WindowStyle="None"
@@ -19,18 +19,44 @@
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="Button">
-                        <Border x:Name="Bd" CornerRadius="6" Background="{TemplateBinding Background}" Padding="{TemplateBinding Padding}">
+                        <Border x:Name="Bd" CornerRadius="6" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Padding="{TemplateBinding Padding}">
                             <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="Bd" Property="Opacity" Value="0.85"/>
+                                <Setter TargetName="Bd" Property="Opacity" Value="0.88"/>
                             </Trigger>
                             <Trigger Property="IsPressed" Value="True">
-                                <Setter TargetName="Bd" Property="Opacity" Value="0.7"/>
+                                <Setter TargetName="Bd" Property="Opacity" Value="0.72"/>
                             </Trigger>
                             <Trigger Property="IsEnabled" Value="False">
-                                <Setter TargetName="Bd" Property="Opacity" Value="0.5"/>
+                                <Setter TargetName="Bd" Property="Opacity" Value="0.45"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style TargetType="ListBoxItem">
+            <Setter Property="SnapsToDevicePixels" Value="True"/>
+            <Setter Property="Padding" Value="10,8"/>
+            <Setter Property="Margin" Value="0,2"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ListBoxItem">
+                        <Border x:Name="ItemBd" CornerRadius="6" Background="Transparent" BorderThickness="1" BorderBrush="Transparent" Padding="{TemplateBinding Padding}">
+                            <ContentPresenter/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="ItemBd" Property="Background" Value="{DynamicResource HoverBrush}"/>
+                                <Setter TargetName="ItemBd" Property="BorderBrush" Value="{DynamicResource BorderBrush}"/>
+                            </Trigger>
+                            <Trigger Property="IsSelected" Value="True">
+                                <Setter TargetName="ItemBd" Property="Background" Value="{DynamicResource SelectedBrush}"/>
+                                <Setter TargetName="ItemBd" Property="BorderBrush" Value="{DynamicResource AccentBrush}"/>
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
@@ -42,11 +68,11 @@
     <Border x:Name="RootBorder" 
             CornerRadius="14" 
             BorderThickness="1"
-            Background="#1E293B"
-            BorderBrush="#334155"
+            Background="{DynamicResource CardBrush}"
+            BorderBrush="{DynamicResource BorderBrush}"
             MouseLeftButtonDown="RootBorder_MouseLeftButtonDown">
         <Border.Effect>
-            <DropShadowEffect BlurRadius="24" ShadowDepth="4" Opacity="0.45" Color="#000000"/>
+            <DropShadowEffect x:Name="RootShadow" BlurRadius="24" ShadowDepth="4" Opacity="0.4" Color="#000000"/>
         </Border.Effect>
 
         <Grid Margin="18,16">
@@ -60,13 +86,14 @@
             <!-- Row 0: Title & Close Button -->
             <Grid Grid.Row="0" Margin="0,0,0,14">
                 <TextBlock x:Name="TxtTitle" Text="🔍 البحث عن مدينة حول العالم" 
-                           FontSize="15" FontWeight="Bold" Foreground="#F8FAFC"
+                           FontSize="15" FontWeight="Bold" Foreground="{DynamicResource TextBrush}"
                            VerticalAlignment="Center" HorizontalAlignment="Left"/>
 
                 <Button x:Name="BtnClose" Content="✕" Width="28" Height="28"
                         HorizontalAlignment="Right" VerticalAlignment="Center"
                         FontSize="13" FontWeight="Bold"
-                        Foreground="#94A3B8" Background="#334155"
+                        Foreground="{DynamicResource Btn2FgBrush}" Background="{DynamicResource Btn2BgBrush}"
+                        BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1"
                         Style="{StaticResource DialogButtonStyle}"
                         Click="BtnClose_Click"/>
             </Grid>
@@ -80,38 +107,37 @@
 
                 <TextBox x:Name="TxtSearchQuery" Grid.Column="0" Height="34"
                          Padding="10,0" VerticalContentAlignment="Center"
-                         FontSize="13" Foreground="#FFFFFF"
-                         Background="#0F172A" BorderBrush="#475569"
+                         FontSize="13" Foreground="{DynamicResource TextBrush}"
+                         Background="{DynamicResource EntryBgBrush}" BorderBrush="{DynamicResource BorderBrush}"
+                         CaretBrush="{DynamicResource TextBrush}"
                          KeyDown="TxtSearchQuery_KeyDown"/>
 
                 <Button x:Name="BtnSearch" Grid.Column="1" Content="بحث"
                         Width="76" Height="34" Margin="8,0,0,0"
                         FontSize="12" FontWeight="SemiBold"
-                        Foreground="#FFFFFF" Background="#10B981"
+                        Foreground="{DynamicResource BtnFgBrush}" Background="{DynamicResource AccentBrush}"
                         Style="{StaticResource DialogButtonStyle}"
                         Click="BtnSearch_Click"/>
             </Grid>
 
             <!-- Row 2: Search Results List -->
-            <Border Grid.Row="2" CornerRadius="8" BorderThickness="1"
-                    Background="#0F172A" BorderBrush="#334155" Margin="0,0,0,12">
+            <Border x:Name="BdResultsList" Grid.Row="2" CornerRadius="8" BorderThickness="1"
+                    Background="{DynamicResource EntryBgBrush}" BorderBrush="{DynamicResource BorderBrush}" Margin="0,0,0,12">
                 <ListBox x:Name="LstResults" 
                          Background="Transparent" BorderThickness="0"
-                         Foreground="#FFFFFF"
+                         Foreground="{DynamicResource TextBrush}"
                          ScrollViewer.HorizontalScrollBarVisibility="Disabled"
                          MouseDoubleClick="LstResults_MouseDoubleClick">
                     <ListBox.ItemTemplate>
                         <DataTemplate>
-                            <Border Padding="10,8" Margin="0,1" CornerRadius="6" Background="Transparent">
-                                <Grid>
-                                    <Grid.RowDefinitions>
-                                        <RowDefinition Height="Auto"/>
-                                        <RowDefinition Height="Auto"/>
-                                    </Grid.RowDefinitions>
-                                    <TextBlock Grid.Row="0" Text="{Binding NameAr}" FontSize="13" FontWeight="Bold" Foreground="#38BDF8"/>
-                                    <TextBlock Grid.Row="1" Text="{Binding CountryAr}" FontSize="11" Foreground="#94A3B8" Margin="0,2,0,0"/>
-                                </Grid>
-                            </Border>
+                            <Grid Margin="2,1">
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                </Grid.RowDefinitions>
+                                <TextBlock Grid.Row="0" Text="{Binding Title}" FontSize="13" FontWeight="Bold" Foreground="{DynamicResource AccentBrush}"/>
+                                <TextBlock Grid.Row="1" Text="{Binding Subtitle}" FontSize="11" Foreground="{DynamicResource TextMutedBrush}" Margin="0,2,0,0"/>
+                            </Grid>
                         </DataTemplate>
                     </ListBox.ItemTemplate>
                 </ListBox>
@@ -119,17 +145,18 @@
 
             <!-- Row 3: Bottom Status & Actions -->
             <Grid Grid.Row="3">
-                <TextBlock x:Name="TxtStatus" Text="" FontSize="11" Foreground="#94A3B8"
+                <TextBlock x:Name="TxtStatus" Text="" FontSize="11" Foreground="{DynamicResource TextMutedBrush}"
                            VerticalAlignment="Center" HorizontalAlignment="Left" TextTrimming="CharacterEllipsis" MaxWidth="220"/>
 
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
                     <Button x:Name="BtnCancel" Content="إلغاء" Width="80" Height="32" Margin="0,0,8,0"
-                            FontSize="12" Foreground="#CBD5E1" Background="#334155"
+                            FontSize="12" Foreground="{DynamicResource Btn2FgBrush}" Background="{DynamicResource Btn2BgBrush}"
+                            BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1"
                             Style="{StaticResource DialogButtonStyle}"
                             Click="BtnCancel_Click"/>
 
                     <Button x:Name="BtnSelect" Content="اختيار" Width="90" Height="32"
-                            FontSize="12" FontWeight="Bold" Foreground="#FFFFFF" Background="#10B981"
+                            FontSize="12" FontWeight="Bold" Foreground="{DynamicResource BtnFgBrush}" Background="{DynamicResource AccentBrush}"
                             Style="{StaticResource DialogButtonStyle}"
                             Click="BtnSelect_Click"/>
                 </StackPanel>

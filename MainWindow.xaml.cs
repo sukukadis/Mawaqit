@@ -543,6 +543,7 @@ public partial class MainWindow : Window
 
     private bool _suppressCountryEvent;
     private bool _suppressWilayaEvent;
+    private List<Country> _currentCountriesList = new();
 
     private void PopulateCountries()
     {
@@ -550,16 +551,22 @@ public partial class MainWindow : Window
         try
         {
             string lang = _config.Language;
-            var list = Country.AllCountries.Select(c => c.DisplayName(lang)).ToList();
+            bool isAr = lang == "ar";
+
+            _currentCountriesList = isAr
+                ? Country.AllCountries.OrderBy(c => c.NameAr, StringComparer.Create(new System.Globalization.CultureInfo("ar-SA"), false)).ToList()
+                : Country.AllCountries.OrderBy(c => c.NameEn, StringComparer.OrdinalIgnoreCase).ToList();
+
+            var list = _currentCountriesList.Select(c => c.DisplayName(lang)).ToList();
             CmbCountry.ItemsSource = list;
 
-            string target = lang == "ar" ? _config.CountryAr : _config.CountryEn;
-            if (string.IsNullOrWhiteSpace(target)) target = lang == "ar" ? "الجزائر" : "Algeria";
+            string target = isAr ? _config.CountryAr : _config.CountryEn;
+            if (string.IsNullOrWhiteSpace(target)) target = isAr ? "الجزائر" : "Algeria";
 
             var matched = Country.FindCountry(target);
             if (matched != null)
             {
-                int idx = Country.AllCountries.IndexOf(matched);
+                int idx = _currentCountriesList.FindIndex(c => c.Code == matched.Code || c.NameEn == matched.NameEn);
                 CmbCountry.SelectedIndex = idx >= 0 ? idx : 0;
             }
             else
@@ -583,7 +590,11 @@ public partial class MainWindow : Window
             if (string.IsNullOrWhiteSpace(country)) country = isAr ? "الجزائر" : "Algeria";
 
             var states = Wilaya.GetStatesForCountry(country);
-            var list = states.Select(w => isAr ? w.NameAr : w.NameEn).ToList();
+            var sortedStates = isAr
+                ? states.OrderBy(w => w.NameAr, StringComparer.Create(new System.Globalization.CultureInfo("ar-SA"), false)).ToList()
+                : states.OrderBy(w => w.NameEn, StringComparer.OrdinalIgnoreCase).ToList();
+
+            var list = sortedStates.Select(w => isAr ? w.NameAr : w.NameEn).ToList();
             CmbWilaya.ItemsSource = list;
 
             string currentCity = isAr ? _config.WilayaAr : _config.WilayaEn;
@@ -1136,10 +1147,19 @@ public partial class MainWindow : Window
     {
         if (_suppressCountryEvent) return;
 
+        Country? country = null;
         int idx = CmbCountry.SelectedIndex;
-        if (idx < 0 || idx >= Country.AllCountries.Count) return;
+        if (idx >= 0 && idx < _currentCountriesList.Count)
+        {
+            country = _currentCountriesList[idx];
+        }
+        else if (CmbCountry.SelectedItem is string selText)
+        {
+            country = Country.FindCountry(selText);
+        }
 
-        var country = Country.AllCountries[idx];
+        if (country == null) return;
+
         _config.CountryAr = country.NameAr;
         _config.CountryEn = country.NameEn;
 
@@ -1151,7 +1171,11 @@ public partial class MainWindow : Window
         var states = Wilaya.GetStatesForCountry(country.NameEn);
         if (states.Count > 0)
         {
-            ChangeLocation(states[0]);
+            bool isAr = _config.Language == "ar";
+            var sortedStates = isAr
+                ? states.OrderBy(w => w.NameAr, StringComparer.Create(new System.Globalization.CultureInfo("ar-SA"), false)).ToList()
+                : states.OrderBy(w => w.NameEn, StringComparer.OrdinalIgnoreCase).ToList();
+            ChangeLocation(sortedStates[0]);
         }
         else
         {
@@ -1210,7 +1234,7 @@ public partial class MainWindow : Window
                 }
                 else
                 {
-                    var dlg = new CitySearchWindow(typed, _config.Language, _theme) { Owner = this };
+                    var dlg = new CitySearchWindow(typed, _config.Language, _theme, _isDark) { Owner = this };
                     if (dlg.ShowDialog() == true && dlg.SelectedLocation != null)
                     {
                         ChangeLocation(dlg.SelectedLocation);
@@ -1272,7 +1296,7 @@ public partial class MainWindow : Window
     private void BtnSearchCity_Click(object sender, RoutedEventArgs e)
     {
         string current = CmbWilaya.Text?.Trim() ?? "";
-        var dlg = new CitySearchWindow(current, _config.Language, _theme)
+        var dlg = new CitySearchWindow(current, _config.Language, _theme, _isDark)
         {
             Owner = this
         };
@@ -1341,7 +1365,7 @@ public partial class MainWindow : Window
             var matchedCountry = Country.FindCountry(targetCountry);
             if (matchedCountry != null)
             {
-                int cIdx = Country.AllCountries.IndexOf(matchedCountry);
+                int cIdx = _currentCountriesList.FindIndex(c => c.Code == matchedCountry.Code || c.NameEn == matchedCountry.NameEn);
                 if (cIdx >= 0 && CmbCountry.SelectedIndex != cIdx)
                 {
                     CmbCountry.SelectedIndex = cIdx;

@@ -5,34 +5,34 @@
 <h1 align="center">Mawaqit (مواقيت الصلاة) - C# / .NET 8 WPF Edition</h1>
 
 <p align="center">
-  <b>A modern, high-performance Windows desktop application for Islamic prayer times in Algeria</b><br>
-  Built with <b>C# (.NET 8 WPF)</b> • Windows 11 Fluent Design & Mica • Real-time Taskbar Countdown Widget • Adhan Audio & Notifications
+  <b>A modern, high-performance Windows desktop application for Islamic prayer times worldwide</b><br>
+  Built with <b>C# (.NET 8 WPF)</b> • Windows 11 Fluent Design & Mica • Real-time Taskbar Countdown Widget • Adhan Audio & Notifications • Worldwide Coverage
 </p>
 
 <p align="center">
   <img src="https://img.shields.io/badge/Platform-Windows%2010%20%2F%2011-0078D4?logo=windows" alt="Platform: Windows" />
   <img src="https://img.shields.io/badge/Framework-.NET%208%20WPF-512BD4?logo=dotnet" alt="Framework: .NET 8 WPF" />
   <img src="https://img.shields.io/badge/Language-C%23%2012-239120?logo=csharp" alt="Language: C#" />
-  <img src="https://img.shields.io/badge/Coverage-69%20Wilayas-10B981" alt="Coverage: 69 Wilayas" />
-  <img src="https://img.shields.io/badge/Algeria%20Only-🇩🇿-green" alt="Algeria Only" />
+  <img src="https://img.shields.io/badge/Coverage-Worldwide%20(100%2B%20Countries)-10B981" alt="Coverage: Worldwide" />
+  <img src="https://img.shields.io/badge/Locations-720%2B%20States%20%26%20Cities-0284C7" alt="Locations: 720+ States" />
+  <img src="https://img.shields.io/badge/Methods-23%20Calculation%20Methods-8B5CF6" alt="Methods: 23" />
 </p>
 
 ---
 
-> [!IMPORTANT]
-> **🇩🇿 Algeria Only / يعمل في الجزائر فقط:**
-> - **English:** This application is designed to work **only in Algeria**. Prayer times are calculated exclusively according to the official calculation method of the **Algerian Ministry of Religious Affairs (وزارة الشؤون الدينية والأوقاف)** and covers all 69 Algerian wilayas and for cities outside the states, you can make manual adjustments based on the state nearest to you.
-> - **العربية:** هذا التطبيق مخصص للعمل **في الجزائر فقط**، ويغطي مواقيت الصلاة لجميع ولايات الجزائر الـ 69 بالنسبة للدوائر والبلديات خارج الولايات يمكن إجراء تعديلات يدوية استناداً إلى الولاية الأقرب إليك 
-تُحسَب مواقيت الصلاة وفقاً لطريقة الحساب الرسمية المعتمدة لدى وزارة الشؤون الدينية
+> [!NOTE]
+> **🌍 Worldwide Coverage & Support / دعم كامل لجميع دول ومدن العالم:**
+> - **English:** Mawaqit supports **accurate Islamic prayer times worldwide across all countries and cities globally**. Select your country from over 100+ nations with comprehensive states, provinces, and governorates (720+ offline locations) sorted alphabetically for instant search, find any location using the online worldwide city search dialog, or click "Auto-Detect My Location" via IP geolocation. The app supports 23 official international calculation methods (including Umm Al-Qura, Algerian Ministry, Egyptian General Authority, MWL, ISNA, Karachi, Diyanet, Dubai, Kuwait, Qatar, France, Russia, Singapore, and more) plus custom per-city manual fine-tuning.
+> - **العربية:** يدعم تطبيق مواقيت حساب مواقيت الصلاة بدقة فائقة **لجميع دول ومدن العالم دون استثناء**. يمكنك اختيار دولتك من بين أكثر من 100 دولة وقائمة شاملة تضم أكثر من 720 ولاية ومحافظة وإقليم مرتبة أبجدياً لسهولة البحث والوصول، أو البحث المباشر عن أي مدينة حول العالم بنافذة البحث المتطورة المتوافقة مع مظهر التطبيق، أو تحديد موقعك تلقائياً بنقرة واحدة عبر الـ IP. كما يدعم التطبيق 23 طريقة حساب إسلامية معتمدة دولياً (أم القرى، وزارة الشؤون الدينية الجزائرية، الهيئة المصرية العامة للمساحة، رابطة العالم الإسلامي، الاتحاد الإسلامي بأمريكا الشمالية، رئاسة الشؤون الدينية التركية، دائرة الشؤون الإسلامية بدبي، الكويت، قطر، فرنسا، وغيرها) مع إمكانية المعايرة والضبط اليدوي الدقيق لكل مدينة.
 
-A high-performance, modern Windows desktop application for Islamic prayer times in Algeria, made in **C# (.NET 8 WPF)**.
+A high-performance, modern Windows desktop application for Islamic prayer times worldwide, made in **C# (.NET 8 WPF)**.
 
 ---
 
 ## 📸 Application Showcase
 
 ### 🖥️ Main Dashboard & Quick Glance Flyout
-The main application dashboard provides an elegant view of all daily prayer times with live countdown to the next prayer, active prayer highlighting, weather integration, and per-wilaya manual calibration. The quick taskbar flyout opens instantly from the tray with completed prayer checkmarks and Quranic verse.
+The main application dashboard provides an elegant view of all daily prayer times with live countdown to the next prayer, active prayer highlighting, weather integration, and per-city manual calibration. The quick taskbar flyout opens instantly from the tray with completed prayer checkmarks and Quranic verse.
 
 <p align="center">
   <img src="screenshots/main_dashboard.jpg" width="48%" alt="Main Prayer Times Dashboard & Manual Tuning" />
@@ -48,7 +48,7 @@ A dedicated, borderless Fluent widget sitting directly on your Windows taskbar n
 </p>
 
 ### ⚙️ Rich Customization & Settings
-Tailor every aspect of the application: select from all 58 Algerian Wilayas, pick and test custom Adhan & Pre-prayer reminder `.mp3` audio files, customize notification timing, toggle taskbar widget options, switch between Dark/Light themes, and enable Windows auto-start.
+Tailor every aspect of the application: select from 100+ countries and 720+ states/provinces (arranged alphabetically), search any global city, select from 23 calculation methods, pick and test custom Adhan & Pre-prayer reminder `.mp3` audio files, customize notification timing, toggle taskbar widget options, switch between Dark/Light themes, and enable Windows auto-start.
 
 <p align="center">
   <img src="screenshots/settings_audio_notifications.jpg" width="48%" alt="Location, Adhan & Notifications Settings" />
@@ -66,15 +66,18 @@ Tailor every aspect of the application: select from all 58 Algerian Wilayas, pic
 2. **Windows 11 Fluent Design & Mica / Glass**:
    - Native integration with Windows 11 Desktop Window Manager (DWM) for rounded corners (`DWMWCP_ROUND`), immersive dark mode (`DWMWA_USE_IMMERSIVE_DARK_MODE`), and system backdrops (`DWMWA_SYSTEMBACKDROP_TYPE`).
    - Emerald green accent (`#10B981`) highlighting the next prayer card with active live countdown.
-3. **Official Algerian Calculation Method**:
-   - Algerian Ministry of Religious Affairs (AlAdhan API method 19).
+3. **Worldwide Coverage (100+ Countries & 720+ States/Provinces)**:
+   - Comprehensive offline database covering all Arab countries (Algeria, Saudi Arabia, Egypt, Morocco, UAE, Palestine, Syria, Iraq, Jordan, etc.) and global nations (USA, UK, Canada, France, Germany, Turkey, Indonesia, Malaysia, etc.).
+   - Countries and cities/states are sorted alphabetically according to the active language (Arabic collation for Arabic, Ordinal for English) for rapid searching.
+   - Built-in online geocoding city search that finds any city, municipality, or village worldwide matching the application theme.
+   - One-click automatic location detection via IP.
+4. **23 Official International Calculation Methods**:
+   - Algerian Ministry of Religious Affairs, Umm Al-Qura (Makkah), Egyptian General Authority of Survey, Muslim World League (MWL), Islamic Society of North America (ISNA), University of Islamic Sciences (Karachi), Diyanet İşleri Başkanlığı (Turkey), Dubai (IACAD), Kuwait, Qatar, France (UOIF), Russia (SAM), Singapore (MUIS), and more.
+   - Automatically pre-selects the recognized local calculation method for each country upon selection.
    - Friday rule: On Friday, Dhuhr is automatically displayed as **Jumu'ah** (الجمعة).
-4. **All 69 Algerian Wilayas & Communes**:
-   - Includes all 58 wilayas + major communes (Barika, Aflou, El Kantara, Bir El Ater, Bou Saada, etc.).
-   - Smart search and diacritic-insensitive filtering for Arabic and French/English names.
-5. **Manual Time Tuning per Wilaya**:
+5. **Manual Time Tuning per Location**:
    - Adjust +/- 60 minutes for Fajr, Dhuhr, Asr, Maghrib, and Isha directly on the Prayer Times tab.
-   - Changes are saved per wilaya in `%APPDATA%\Mawaqit\config.json` and immediately update the countdown and cards.
+   - Changes are saved per location in `%APPDATA%\Mawaqit\config.json` and immediately update the countdown and cards.
 6. **Custom Audio & Notifications**:
    - Play Adhan at exact prayer time.
    - Pre-prayer reminder (1–60 minutes before Adhan).
@@ -97,7 +100,7 @@ Tailor every aspect of the application: select from all 58 Algerian Wilayas, pic
     - Named Win32 Mutex `Global\Mawaqit_SingleInstance_Mutex_v4` and Event `Global\Mawaqit_ShowEvent_v4`.
     - When a second instance launches, it signals the existing instance to bring its window to the foreground and exits immediately with code 0.
 11. **Weather & Live Temperature**:
-    - Live temperature from Open-Meteo API for the selected Wilaya's coordinates, updated every 45 minutes with color coding (<5°C, <15°C, <25°C, <35°C, >=35°C).
+    - Live temperature from Open-Meteo API for the selected location's coordinates, updated every 45 minutes with color coding (<5°C, <15°C, <25°C, <35°C, >=35°C).
 12. **Gregorian & Hijri Calendars**:
     - Dual calendar display using `System.Globalization.UmAlQuraCalendar`.
 
@@ -129,7 +132,9 @@ Mawaqit/
 │   ├── settings_audio_notifications.jpg # Audio & notification settings
 │   └── settings_theme_startup.jpg    # Theme, language & startup settings
 ├── Models/
-│   ├── Wilaya.cs                     # 69 Algerian locations with coordinates & search filter
+│   ├── Country.cs                    # 100+ countries with codes, aliases, and localized names
+│   ├── Wilaya.cs                     # 720+ locations database (Arab & global) with search filter
+│   ├── CalculationMethod.cs          # 23 international prayer calculation methods
 │   ├── PrayerTimes.cs                # Prayer models, order, and icons
 │   ├── AppConfig.cs                  # JSON configuration schema & persistence
 │   └── ThemeColors.cs                # Dark & Light palettes (#10B981 emerald accent)
