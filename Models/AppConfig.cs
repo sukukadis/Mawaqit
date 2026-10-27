@@ -33,7 +33,7 @@ public class AppConfig
     public int ReminderMinutes { get; set; } = 10;
 
     [JsonPropertyName("start_with_windows")]
-    public bool StartWithWindows { get; set; } = false;
+    public bool StartWithWindows { get; set; } = true;
 
     [JsonPropertyName("theme_mode")]
     public string ThemeMode { get; set; } = "dark";

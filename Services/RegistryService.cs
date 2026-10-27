@@ -22,20 +22,34 @@ public static class RegistryService
         return $"\"{exePath}\" --startup";
     }
 
-    public static void SyncStartup(bool enable)
+    public static void SyncStartup(bool enable, bool force = false)
     {
         try
         {
-            using var runKey = Registry.CurrentUser.OpenSubKey(RunSubKey, true);
+            string? exePath = Environment.ProcessPath;
+            if (string.IsNullOrEmpty(exePath))
+            {
+                exePath = Process.GetCurrentProcess().MainModule?.FileName ?? "";
+            }
+
+            // Avoid registering temporary debug build paths into Windows Run registry unless explicitly forced
+            if (!force && (exePath.Contains(@"\bin\Debug") || exePath.Contains(@"\bin\Release")))
+            {
+                return;
+            }
+
+            using var runKey = Registry.CurrentUser.CreateSubKey(RunSubKey, true);
             if (runKey != null)
             {
                 if (enable)
                 {
-                    runKey.SetValue(ValueName, GetStartupCommand(), RegistryValueKind.String);
+                    string startupCmd = GetStartupCommand();
+                    runKey.SetValue(ValueName, startupCmd, RegistryValueKind.String);
+                    Logger.LogStartup($"Registry Run key set: {startupCmd}");
 
                     try
                     {
-                        using var approvedKey = Registry.CurrentUser.OpenSubKey(StartupApprovedSubKey, true);
+                        using var approvedKey = Registry.CurrentUser.CreateSubKey(StartupApprovedSubKey, true);
                         if (approvedKey != null)
                         {
                             byte[] enabledBytes = new byte[12] { 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
@@ -49,6 +63,7 @@ public static class RegistryService
                     if (runKey.GetValue(ValueName) != null)
                     {
                         runKey.DeleteValue(ValueName, false);
+                        Logger.LogStartup("Registry Run key removed");
                     }
                 }
             }

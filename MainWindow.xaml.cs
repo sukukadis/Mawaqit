@@ -188,47 +188,57 @@ public partial class MainWindow : Window
         _clockTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(1) };
         _clockTimer.Tick += (s, e) => OnClockTick();
 
+        // Perform complete background and widget initialization immediately.
+        // This ensures the taskbar widget, prayer scheduler, weather, and clock
+        // run even when Mawaqit is started minimized to tray on Windows boot (--startup).
+        InitializeApp(startHidden);
+
         Loaded += (s, e) =>
         {
-            // Load cached weather immediately so user never sees blank or --°C
-            var cachedWeather = WeatherService.LoadCached();
-            if (cachedWeather != null && cachedWeather.Temperature.HasValue)
-            {
-                _lastWeatherResult = cachedWeather;
-                ImgWeatherIcon.Source = cachedWeather.IconDrawing;
-                TxtTemperature.Text = $"{cachedWeather.Temperature.Value:0}°C";
-                TxtTemperature.Foreground = cachedWeather.TextColor;
-                _lastWeatherString = cachedWeather.FlyoutWeatherText;
-                _taskbarWidget?.UpdateWeatherData(cachedWeather);
-            }
-            else
-            {
-                ImgWeatherIcon.Source = WeatherIconProvider.GetWeatherDrawing(null);
-            }
-
-            ApplyTheme();
-            ApplyLanguage();
-            PopulateWilayas();
-            LoadCurrentTuningInputs();
-            LoadSettingsForm();
-            _clockTimer.Start();
-
-            if (_config.TaskbarWidgetEnabled)
-            {
-                _taskbarWidget?.Show();
-                _taskbarWidget?.RepositionToTaskbar();
-            }
-
-            _ = FetchPrayerTimesAsync();
-            _ = FetchWeatherAsync();
-
-            if (startHidden)
-            {
-                Hide();
-            }
+            DwmHelper.EnableWin11Styling(this, _isDark, false);
         };
 
         Closing += OnWindowClosing;
+    }
+
+    private void InitializeApp(bool startHidden)
+    {
+        // Load cached weather immediately so user never sees blank or --°C
+        var cachedWeather = WeatherService.LoadCached();
+        if (cachedWeather != null && cachedWeather.Temperature.HasValue)
+        {
+            _lastWeatherResult = cachedWeather;
+            ImgWeatherIcon.Source = cachedWeather.IconDrawing;
+            TxtTemperature.Text = $"{cachedWeather.Temperature.Value:0}°C";
+            TxtTemperature.Foreground = cachedWeather.TextColor;
+            _lastWeatherString = cachedWeather.FlyoutWeatherText;
+            _taskbarWidget?.UpdateWeatherData(cachedWeather);
+        }
+        else
+        {
+            ImgWeatherIcon.Source = WeatherIconProvider.GetWeatherDrawing(null);
+        }
+
+        ApplyTheme();
+        ApplyLanguage();
+        PopulateWilayas();
+        LoadCurrentTuningInputs();
+        LoadSettingsForm();
+        _clockTimer.Start();
+
+        if (_config.TaskbarWidgetEnabled)
+        {
+            _taskbarWidget?.Show();
+            _taskbarWidget?.RepositionToTaskbar();
+        }
+
+        if (_config.StartWithWindows)
+        {
+            RegistryService.SyncStartup(true);
+        }
+
+        _ = FetchPrayerTimesAsync();
+        _ = FetchWeatherAsync();
     }
 
     private DateTime _lastToggleFlyoutTime = DateTime.MinValue;
@@ -1282,7 +1292,7 @@ public partial class MainWindow : Window
     {
         _config.StartWithWindows = ChkStartup.IsChecked == true;
         _config.Save();
-        RegistryService.SyncStartup(_config.StartWithWindows);
+        RegistryService.SyncStartup(_config.StartWithWindows, force: true);
     }
 
     private void LoadAppLogo()

@@ -174,6 +174,15 @@ public partial class TaskbarWidgetWindow : Window
         Loaded += (s, e) =>
         {
             AttachToTaskbar();
+            // During Windows boot / login, taskbar layout shifts as system tray icons load;
+            // reposition after brief delays so the widget is always docked cleanly in place.
+            Dispatcher.InvokeAsync(async () =>
+            {
+                await System.Threading.Tasks.Task.Delay(500);
+                if (!_isClosing && IsVisible) AttachToTaskbar();
+                await System.Threading.Tasks.Task.Delay(1500);
+                if (!_isClosing && IsVisible) RepositionToTaskbar();
+            });
         };
 
         SizeChanged += (s, e) =>

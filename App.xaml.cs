@@ -48,14 +48,14 @@ public partial class App : Application
             var config = AppConfig.Load();
             config.StartWithWindows = true;
             config.Save();
-            RegistryService.SyncStartup(true);
+            RegistryService.SyncStartup(true, force: true);
         }
         else if (args.Contains("--disable-startup"))
         {
             var config = AppConfig.Load();
             config.StartWithWindows = false;
             config.Save();
-            RegistryService.SyncStartup(false);
+            RegistryService.SyncStartup(false, force: true);
         }
 
         // Single instance check
