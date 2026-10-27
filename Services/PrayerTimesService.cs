@@ -23,18 +23,19 @@ public class PrayerTimesService
         Timeout = TimeSpan.FromSeconds(15)
     };
 
-    public const int CalculationMethod = 19; // Algerian Ministry of Religious Affairs
+    public const int DefaultCalculationMethod = 19; // Algerian Ministry of Religious Affairs
 
-    public static async Task<(Dictionary<string, string>? RawTimings, string? Error)> FetchTimingsFromApiAsync(double lat, double lng)
+    public static async Task<(Dictionary<string, string>? RawTimings, string? Error)> FetchTimingsFromApiAsync(double lat, double lng, int calculationMethod = 19)
     {
+        int method = calculationMethod > 0 ? calculationMethod : DefaultCalculationMethod;
         string latStr = lat.ToString(CultureInfo.InvariantCulture);
         string lngStr = lng.ToString(CultureInfo.InvariantCulture);
 
         var endpoints = new[]
         {
-            $"https://api.aladhan.com/v1/timings?latitude={latStr}&longitude={lngStr}&method={CalculationMethod}&school=0",
-            $"http://api.aladhan.com/v1/timings?latitude={latStr}&longitude={lngStr}&method={CalculationMethod}&school=0",
-            $"https://api.aladhan.com/v1/calendar?latitude={latStr}&longitude={lngStr}&method={CalculationMethod}&school=0&month={DateTime.Now.Month}&year={DateTime.Now.Year}"
+            $"https://api.aladhan.com/v1/timings?latitude={latStr}&longitude={lngStr}&method={method}&school=0",
+            $"http://api.aladhan.com/v1/timings?latitude={latStr}&longitude={lngStr}&method={method}&school=0",
+            $"https://api.aladhan.com/v1/calendar?latitude={latStr}&longitude={lngStr}&method={method}&school=0&month={DateTime.Now.Month}&year={DateTime.Now.Year}"
         };
 
         string lastError = "";

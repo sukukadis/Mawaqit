@@ -14,6 +14,21 @@ public class AppConfig
     [JsonPropertyName("wilaya_en")]
     public string WilayaEn { get; set; } = "Alger";
 
+    [JsonPropertyName("country_ar")]
+    public string CountryAr { get; set; } = "الجزائر";
+
+    [JsonPropertyName("country_en")]
+    public string CountryEn { get; set; } = "Algeria";
+
+    [JsonPropertyName("latitude")]
+    public double Latitude { get; set; } = 36.7538259;
+
+    [JsonPropertyName("longitude")]
+    public double Longitude { get; set; } = 3.057841;
+
+    [JsonPropertyName("calculation_method")]
+    public int CalculationMethod { get; set; } = 19;
+
     [JsonPropertyName("language")]
     public string Language { get; set; } = "ar";
 
@@ -101,6 +116,7 @@ public class AppConfig
                 if (config != null)
                 {
                     config.TuneByWilaya ??= new();
+                    config.EnsureCoordinates();
                     return config;
                 }
             }
@@ -110,7 +126,40 @@ public class AppConfig
             Services.Logger.LogError($"Failed to load config: {ex.Message}");
         }
 
-        return new AppConfig();
+        var def = new AppConfig();
+        def.EnsureCoordinates();
+        return def;
+    }
+
+    public void EnsureCoordinates()
+    {
+        if (Latitude == 0 && Longitude == 0)
+        {
+            var found = Wilaya.FindLocation(WilayaAr, WilayaEn);
+            if (found != null)
+            {
+                Latitude = found.Latitude;
+                Longitude = found.Longitude;
+                CountryAr = found.CountryAr;
+                CountryEn = found.CountryEn;
+                if (CalculationMethod <= 0 || (CalculationMethod == 19 && found.CountryEn != "Algeria"))
+                {
+                    CalculationMethod = found.DefaultMethod;
+                }
+            }
+            else
+            {
+                Latitude = 36.7538259;
+                Longitude = 3.057841;
+                CountryAr = "الجزائر";
+                CountryEn = "Algeria";
+                if (CalculationMethod <= 0) CalculationMethod = 19;
+            }
+        }
+        else if (CalculationMethod <= 0)
+        {
+            CalculationMethod = 19;
+        }
     }
 
     public void Save()

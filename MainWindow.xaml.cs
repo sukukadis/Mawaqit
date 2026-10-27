@@ -221,6 +221,7 @@ public partial class MainWindow : Window
 
         ApplyTheme();
         ApplyLanguage();
+        PopulateCountries();
         PopulateWilayas();
         LoadCurrentTuningInputs();
         LoadSettingsForm();
@@ -406,7 +407,13 @@ public partial class MainWindow : Window
             card.BorderBrush = _theme.Border;
         }
 
+        LblCountry.Foreground = _theme.Text;
         LblWilaya.Foreground = _theme.Text;
+        LblCalcMethod.Foreground = _theme.Text;
+        BtnAutoDetectLoc.Background = _theme.Btn2Bg;
+        BtnAutoDetectLoc.Foreground = _theme.Btn2Fg;
+        BtnSearchCity.Background = _theme.Btn2Bg;
+        BtnSearchCity.Foreground = _theme.Btn2Fg;
         LblMinutesBefore.Foreground = _theme.Text;
         TxtReminderMinutes.Background = _theme.EntryBg;
         TxtReminderMinutes.Foreground = _theme.Text;
@@ -466,7 +473,14 @@ public partial class MainWindow : Window
         LblTuneIsha.Text = LocalizationService.Get("Isha", lang);
 
         SecLocationTitle.Text = LocalizationService.Get("sec_location", lang);
+        LblCountry.Text = LocalizationService.Get("country", lang);
         LblWilaya.Text = LocalizationService.Get("wilaya", lang);
+        LblCalcMethod.Text = LocalizationService.Get("calc_method", lang);
+        BtnAutoDetectLoc.Content = LocalizationService.Get("auto_detect", lang);
+        BtnSearchCity.Content = LocalizationService.Get("search_city", lang);
+        PopulateCalculationMethods();
+        PopulateCountries();
+        PopulateWilayas();
 
         SecAdhanTitle.Text = LocalizationService.Get("sec_adhan", lang);
         ChkAdhanEnable.Content = LocalizationService.Get("adhan_enable", lang);
@@ -515,25 +529,104 @@ public partial class MainWindow : Window
 
     private void UpdateLocationLabels()
     {
-        string wilaya = _config.Language == "ar" ? _config.WilayaAr : _config.WilayaEn;
-        TxtLocationHeader.Text = $"📍 {wilaya}";
-        TxtCurrentLocRow.Text = LocalizationService.Get("current_location", _config.Language, wilaya);
+        string city = _config.Language == "ar" ? _config.WilayaAr : _config.WilayaEn;
+        string country = _config.Language == "ar" ? _config.CountryAr : _config.CountryEn;
+        string locDisplay = (string.IsNullOrEmpty(country) || country == city) ? city : $"{city} — {country}";
+
+        TxtLocationHeader.Text = $"📍 {locDisplay}";
+        TxtCurrentLocRow.Text = LocalizationService.Get("current_location", _config.Language, locDisplay);
     }
 
     #endregion
 
-    #region Wilaya & Tuning Setup
+    #region Country, Wilaya & Tuning Setup
 
-    private void PopulateWilayas()
+    private bool _suppressCountryEvent;
+    private bool _suppressWilayaEvent;
+
+    private void PopulateCountries()
     {
-        bool isAr = _config.Language == "ar";
-        var list = isAr
-            ? Wilaya.AllWilayas.Select(w => w.NameAr).OrderBy(x => x).ToList()
-            : Wilaya.AllWilayas.Select(w => w.NameEn).OrderBy(x => x).ToList();
+        _suppressCountryEvent = true;
+        try
+        {
+            string lang = _config.Language;
+            var list = Country.AllCountries.Select(c => c.DisplayName(lang)).ToList();
+            CmbCountry.ItemsSource = list;
 
-        CmbWilaya.ItemsSource = list;
-        string current = isAr ? _config.WilayaAr : _config.WilayaEn;
-        CmbWilaya.SelectedItem = current;
+            string target = lang == "ar" ? _config.CountryAr : _config.CountryEn;
+            if (string.IsNullOrWhiteSpace(target)) target = lang == "ar" ? "الجزائر" : "Algeria";
+
+            var matched = Country.FindCountry(target);
+            if (matched != null)
+            {
+                int idx = Country.AllCountries.IndexOf(matched);
+                CmbCountry.SelectedIndex = idx >= 0 ? idx : 0;
+            }
+            else
+            {
+                CmbCountry.SelectedIndex = 0;
+            }
+        }
+        finally
+        {
+            _suppressCountryEvent = false;
+        }
+    }
+
+    private void PopulateWilayas(string? countryName = null)
+    {
+        _suppressWilayaEvent = true;
+        try
+        {
+            bool isAr = _config.Language == "ar";
+            string country = countryName ?? (isAr ? _config.CountryAr : _config.CountryEn);
+            if (string.IsNullOrWhiteSpace(country)) country = isAr ? "الجزائر" : "Algeria";
+
+            var states = Wilaya.GetStatesForCountry(country);
+            var list = states.Select(w => isAr ? w.NameAr : w.NameEn).ToList();
+            CmbWilaya.ItemsSource = list;
+
+            string currentCity = isAr ? _config.WilayaAr : _config.WilayaEn;
+            var matchingItem = list.FirstOrDefault(x =>
+                string.Equals(x, currentCity, StringComparison.OrdinalIgnoreCase) ||
+                Wilaya.NormalizeLocationSearch(x) == Wilaya.NormalizeLocationSearch(currentCity));
+
+            if (matchingItem != null)
+            {
+                CmbWilaya.SelectedItem = matchingItem;
+            }
+            else if (list.Count > 0)
+            {
+                CmbWilaya.SelectedIndex = 0;
+            }
+            else
+            {
+                CmbWilaya.Text = currentCity;
+            }
+        }
+        finally
+        {
+            _suppressWilayaEvent = false;
+        }
+    }
+
+    private bool _suppressCalcMethodEvent;
+    private void PopulateCalculationMethods()
+    {
+        _suppressCalcMethodEvent = true;
+        try
+        {
+            var list = CalculationMethodItem.AllMethods.Select(m => m.DisplayName(_config.Language)).ToList();
+            CmbCalcMethod.ItemsSource = list;
+
+            int currentMethodId = _config.CalculationMethod > 0 ? _config.CalculationMethod : 19;
+            int idx = CalculationMethodItem.AllMethods.FindIndex(m => m.Id == currentMethodId);
+            CmbCalcMethod.SelectedIndex = idx >= 0 ? idx : 0;
+        }
+        finally
+        {
+            _suppressCalcMethodEvent = false;
+        }
     }
 
     private void LoadCurrentTuningInputs()
@@ -572,6 +665,7 @@ public partial class MainWindow : Window
         RbThemeLight.IsChecked = _config.ThemeMode == "light";
 
         ChkStartup.IsChecked = _config.StartWithWindows;
+        PopulateCalculationMethods();
 
         RefreshAudioTestButtons();
     }
@@ -601,10 +695,19 @@ public partial class MainWindow : Window
 
     private Wilaya GetCurrentWilaya()
     {
-        var found = Wilaya.AllWilayas.FirstOrDefault(w =>
-            string.Equals(w.NameAr, _config.WilayaAr, StringComparison.OrdinalIgnoreCase) ||
-            string.Equals(w.NameEn, _config.WilayaEn, StringComparison.OrdinalIgnoreCase));
+        if (_config.Latitude != 0 && _config.Longitude != 0)
+        {
+            return new Wilaya(
+                _config.WilayaAr,
+                _config.WilayaEn,
+                _config.Latitude,
+                _config.Longitude,
+                _config.CountryAr,
+                _config.CountryEn,
+                _config.CalculationMethod);
+        }
 
+        var found = Wilaya.FindLocation(_config.WilayaAr, _config.WilayaEn);
         return found ?? Wilaya.AllWilayas[15]; // Default Algiers
     }
 
@@ -616,7 +719,8 @@ public partial class MainWindow : Window
         TxtStatus.Text = LocalizationService.Get("fetching", _config.Language);
 
         var wilaya = GetCurrentWilaya();
-        var (timings, err) = await PrayerTimesService.FetchTimingsFromApiAsync(wilaya.Latitude, wilaya.Longitude);
+        int method = _config.CalculationMethod > 0 ? _config.CalculationMethod : (wilaya.DefaultMethod > 0 ? wilaya.DefaultMethod : 19);
+        var (timings, err) = await PrayerTimesService.FetchTimingsFromApiAsync(wilaya.Latitude, wilaya.Longitude, method);
 
         if (timings != null)
         {
@@ -1028,49 +1132,229 @@ public partial class MainWindow : Window
         }
     }
 
-    private void CmbWilaya_SelectionChanged(object sender, SelectionChangedEventArgs e)
+    private void CmbCountry_SelectionChanged(object sender, SelectionChangedEventArgs e)
     {
-        if (CmbWilaya.SelectedItem is string selected && !string.IsNullOrWhiteSpace(selected))
+        if (_suppressCountryEvent) return;
+
+        int idx = CmbCountry.SelectedIndex;
+        if (idx < 0 || idx >= Country.AllCountries.Count) return;
+
+        var country = Country.AllCountries[idx];
+        _config.CountryAr = country.NameAr;
+        _config.CountryEn = country.NameEn;
+
+        if (country.DefaultMethod > 0)
         {
-            ChangeWilaya(selected);
+            _config.CalculationMethod = country.DefaultMethod;
+        }
+
+        var states = Wilaya.GetStatesForCountry(country.NameEn);
+        if (states.Count > 0)
+        {
+            ChangeLocation(states[0]);
+        }
+        else
+        {
+            _config.Save();
+            PopulateWilayas(country.NameEn);
+            PopulateCalculationMethods();
+            UpdateLocationLabels();
+            _ = FetchPrayerTimesAsync();
+            _ = FetchWeatherAsync();
         }
     }
 
-    private void CmbWilaya_KeyUp(object sender, KeyEventArgs e)
+    private void CmbWilaya_SelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+        if (_suppressWilayaEvent) return;
+
+        if (CmbWilaya.SelectedItem is string selected && !string.IsNullOrWhiteSpace(selected))
+        {
+            bool isAr = _config.Language == "ar";
+            var states = Wilaya.GetStatesForCountry(_config.CountryEn);
+            var found = states.FirstOrDefault(w =>
+                (isAr ? w.NameAr : w.NameEn) == selected ||
+                Wilaya.NormalizeLocationSearch(isAr ? w.NameAr : w.NameEn) == Wilaya.NormalizeLocationSearch(selected))
+                ?? Wilaya.FindLocation(selected, selected);
+
+            if (found != null)
+            {
+                ChangeLocation(found);
+            }
+        }
+    }
+
+    private async void CmbWilaya_KeyUp(object sender, KeyEventArgs e)
     {
         if (e.Key is Key.Enter)
         {
             string typed = CmbWilaya.Text.Trim();
             if (!string.IsNullOrEmpty(typed))
             {
-                var matches = Wilaya.FilterWilayas(typed, _config.Language == "ar");
+                bool isAr = _config.Language == "ar";
+                var states = Wilaya.GetStatesForCountry(_config.CountryEn);
+                var match = states.FirstOrDefault(w =>
+                    Wilaya.NormalizeLocationSearch(isAr ? w.NameAr : w.NameEn)
+                        .StartsWith(Wilaya.NormalizeLocationSearch(typed)));
+
+                if (match != null)
+                {
+                    ChangeLocation(match);
+                    return;
+                }
+
+                var matches = Wilaya.FilterWilayas(typed, isAr);
                 if (matches.Count > 0)
                 {
-                    string target = _config.Language == "ar" ? matches[0].NameAr : matches[0].NameEn;
-                    CmbWilaya.SelectedItem = target;
-                    ChangeWilaya(target);
+                    ChangeLocation(matches[0]);
+                }
+                else
+                {
+                    var dlg = new CitySearchWindow(typed, _config.Language, _theme) { Owner = this };
+                    if (dlg.ShowDialog() == true && dlg.SelectedLocation != null)
+                    {
+                        ChangeLocation(dlg.SelectedLocation);
+                    }
                 }
             }
         }
     }
 
-    private void ChangeWilaya(string wilayaName)
+    private void CmbCalcMethod_SelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+        if (_suppressCalcMethodEvent) return;
+
+        int idx = CmbCalcMethod.SelectedIndex;
+        if (idx >= 0 && idx < CalculationMethodItem.AllMethods.Count)
+        {
+            var selectedMethod = CalculationMethodItem.AllMethods[idx];
+            if (_config.CalculationMethod != selectedMethod.Id)
+            {
+                _config.CalculationMethod = selectedMethod.Id;
+                _config.Save();
+                _ = FetchPrayerTimesAsync();
+            }
+        }
+    }
+
+    private async void BtnAutoDetectLoc_Click(object sender, RoutedEventArgs e)
+    {
+        BtnAutoDetectLoc.IsEnabled = false;
+        BtnAutoDetectLoc.Content = LocalizationService.Get("detecting_loc", _config.Language);
+
+        try
+        {
+            var (loc, err) = await LocationService.DetectLocationAsync();
+            if (loc != null)
+            {
+                ChangeLocation(loc);
+                string locName = _config.Language == "ar" ? loc.DisplayNameAr : loc.DisplayNameEn;
+                TxtStatus.Text = LocalizationService.Get("detect_success", _config.Language, locName);
+            }
+            else
+            {
+                string msg = LocalizationService.Get("detect_fail", _config.Language);
+                TxtStatus.Text = msg;
+                MessageBox.Show(msg, "Mawaqit", MessageBoxButton.OK, MessageBoxImage.Information);
+            }
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError($"BtnAutoDetectLoc exception: {ex.Message}");
+        }
+        finally
+        {
+            BtnAutoDetectLoc.IsEnabled = true;
+            BtnAutoDetectLoc.Content = LocalizationService.Get("auto_detect", _config.Language);
+        }
+    }
+
+    private void BtnSearchCity_Click(object sender, RoutedEventArgs e)
+    {
+        string current = CmbWilaya.Text?.Trim() ?? "";
+        var dlg = new CitySearchWindow(current, _config.Language, _theme)
+        {
+            Owner = this
+        };
+
+        if (dlg.ShowDialog() == true && dlg.SelectedLocation != null)
+        {
+            ChangeLocation(dlg.SelectedLocation);
+        }
+    }
+
+    private void ChangeWilaya(string input)
     {
         bool isAr = _config.Language == "ar";
-        var w = Wilaya.AllWilayas.FirstOrDefault(x =>
-            (isAr && x.NameAr == wilayaName) || (!isAr && x.NameEn == wilayaName));
+        var states = Wilaya.GetStatesForCountry(_config.CountryEn);
+        var w = states.FirstOrDefault(x =>
+            (isAr && (x.DisplayNameAr == input || x.NameAr == input)) ||
+            (!isAr && (x.DisplayNameEn == input || x.NameEn == input)))
+            ?? Wilaya.AllLocations.FirstOrDefault(x =>
+            (isAr && (x.DisplayNameAr == input || x.NameAr == input)) ||
+            (!isAr && (x.DisplayNameEn == input || x.NameEn == input)));
 
-        if (w == null) return;
+        if (w == null)
+        {
+            var matches = Wilaya.FilterWilayas(input, isAr);
+            if (matches.Count > 0) w = matches[0];
+        }
 
+        if (w != null)
+        {
+            ChangeLocation(w);
+        }
+    }
+
+    private void ChangeLocation(Wilaya w)
+    {
         _config.WilayaAr = w.NameAr;
         _config.WilayaEn = w.NameEn;
+        _config.CountryAr = w.CountryAr;
+        _config.CountryEn = w.CountryEn;
+        _config.Latitude = w.Latitude;
+        _config.Longitude = w.Longitude;
+
+        if (w.DefaultMethod > 0)
+        {
+            _config.CalculationMethod = w.DefaultMethod;
+        }
+
         _config.Save();
 
+        SyncLocationControls();
+        PopulateCalculationMethods();
         UpdateLocationLabels();
         LoadCurrentTuningInputs();
 
         _ = FetchPrayerTimesAsync();
         _ = FetchWeatherAsync();
+    }
+
+    private void SyncLocationControls()
+    {
+        _suppressCountryEvent = true;
+        _suppressWilayaEvent = true;
+        try
+        {
+            string targetCountry = _config.Language == "ar" ? _config.CountryAr : _config.CountryEn;
+            var matchedCountry = Country.FindCountry(targetCountry);
+            if (matchedCountry != null)
+            {
+                int cIdx = Country.AllCountries.IndexOf(matchedCountry);
+                if (cIdx >= 0 && CmbCountry.SelectedIndex != cIdx)
+                {
+                    CmbCountry.SelectedIndex = cIdx;
+                }
+            }
+
+            PopulateWilayas(_config.CountryEn);
+        }
+        finally
+        {
+            _suppressCountryEvent = false;
+            _suppressWilayaEvent = false;
+        }
     }
 
     private void ChkAdhanEnable_Changed(object sender, RoutedEventArgs e)

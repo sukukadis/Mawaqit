@@ -240,18 +240,55 @@
                     <StackPanel Margin="6,10,10,16">
 
                         <!-- SECTION: LOCATION -->
-                        <TextBlock x:Name="SecLocationTitle" Text="📍 الموقع" FontSize="13" FontWeight="Bold" Margin="4,6,4,4"/>
+                        <TextBlock x:Name="SecLocationTitle" Text="📍 الموقع وطريقة الحساب" FontSize="13" FontWeight="Bold" Margin="4,6,4,4"/>
                         <Border x:Name="CardLocation" CornerRadius="8" BorderThickness="1" Margin="0,0,0,10">
-                            <Grid Margin="14,10">
-                                <TextBlock x:Name="LblWilaya" Text="الولاية:" FontSize="12" FontWeight="SemiBold"
-                                           VerticalAlignment="Center" HorizontalAlignment="Left"/>
-                                <ComboBox x:Name="CmbWilaya" Width="260" Height="30"
-                                          HorizontalAlignment="Right"
-                                          IsEditable="True"
-                                          IsTextSearchEnabled="True"
-                                          SelectionChanged="CmbWilaya_SelectionChanged"
-                                          KeyUp="CmbWilaya_KeyUp"/>
-                            </Grid>
+                            <StackPanel Margin="14,10">
+                                <!-- Country Selection -->
+                                <Grid Margin="0,0,0,8">
+                                    <TextBlock x:Name="LblCountry" Text="الدولة:" FontSize="12" FontWeight="SemiBold"
+                                               VerticalAlignment="Center" HorizontalAlignment="Left"/>
+                                    <ComboBox x:Name="CmbCountry" Width="270" Height="30"
+                                              HorizontalAlignment="Right"
+                                              IsEditable="True"
+                                              IsTextSearchEnabled="True"
+                                              SelectionChanged="CmbCountry_SelectionChanged"/>
+                                </Grid>
+
+                                <!-- City / Region Selection -->
+                                <Grid Margin="0,0,0,8">
+                                    <TextBlock x:Name="LblWilaya" Text="الولاية / المحافظة / الإقليم:" FontSize="12" FontWeight="SemiBold"
+                                               VerticalAlignment="Center" HorizontalAlignment="Left"/>
+                                    <ComboBox x:Name="CmbWilaya" Width="270" Height="30"
+                                              HorizontalAlignment="Right"
+                                              IsEditable="True"
+                                              IsTextSearchEnabled="True"
+                                              SelectionChanged="CmbWilaya_SelectionChanged"
+                                              KeyUp="CmbWilaya_KeyUp"/>
+                                </Grid>
+
+                                <!-- Action Buttons: Auto-Detect & Search Worldwide -->
+                                <Grid Margin="0,0,0,10">
+                                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                                        <Button x:Name="BtnAutoDetectLoc" Content="📍 تحديد موقعي تلقائياً"
+                                                Style="{StaticResource RoundedButtonStyle}"
+                                                Height="28" Padding="10,0" Margin="0,0,6,0"
+                                                Click="BtnAutoDetectLoc_Click"/>
+                                        <Button x:Name="BtnSearchCity" Content="🔍 بحث حول العالم"
+                                                Style="{StaticResource RoundedButtonStyle}"
+                                                Height="28" Padding="10,0"
+                                                Click="BtnSearchCity_Click"/>
+                                    </StackPanel>
+                                </Grid>
+
+                                <!-- Calculation Method Selector -->
+                                <Grid Margin="0,0,0,2">
+                                    <TextBlock x:Name="LblCalcMethod" Text="طريقة الحساب:" FontSize="12" FontWeight="SemiBold"
+                                               VerticalAlignment="Center" HorizontalAlignment="Left"/>
+                                    <ComboBox x:Name="CmbCalcMethod" Width="270" Height="30"
+                                              HorizontalAlignment="Right"
+                                              SelectionChanged="CmbCalcMethod_SelectionChanged"/>
+                                </Grid>
+                            </StackPanel>
                         </Border>
 
                         <!-- SECTION: ADHAN -->

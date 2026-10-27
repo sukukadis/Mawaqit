@@ -1,0 +1,139 @@
+<Window x:Class="Mawaqit.Controls.CitySearchWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Search City"
+        Width="440" Height="480"
+        WindowStartupLocation="CenterOwner"
+        ResizeMode="NoResize"
+        WindowStyle="None"
+        AllowsTransparency="True"
+        Background="Transparent"
+        ShowInTaskbar="False"
+        FontFamily="Segoe UI Variable Text, Segoe UI, Tahoma, sans-serif">
+
+    <Window.Resources>
+        <Style x:Key="DialogButtonStyle" TargetType="Button">
+            <Setter Property="OverridesDefaultStyle" Value="True"/>
+            <Setter Property="SnapsToDevicePixels" Value="True"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="Bd" CornerRadius="6" Background="{TemplateBinding Background}" Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Bd" Property="Opacity" Value="0.85"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="Bd" Property="Opacity" Value="0.7"/>
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter TargetName="Bd" Property="Opacity" Value="0.5"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </Window.Resources>
+
+    <Border x:Name="RootBorder" 
+            CornerRadius="14" 
+            BorderThickness="1"
+            Background="#1E293B"
+            BorderBrush="#334155"
+            MouseLeftButtonDown="RootBorder_MouseLeftButtonDown">
+        <Border.Effect>
+            <DropShadowEffect BlurRadius="24" ShadowDepth="4" Opacity="0.45" Color="#000000"/>
+        </Border.Effect>
+
+        <Grid Margin="18,16">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+
+            <!-- Row 0: Title & Close Button -->
+            <Grid Grid.Row="0" Margin="0,0,0,14">
+                <TextBlock x:Name="TxtTitle" Text="🔍 البحث عن مدينة حول العالم" 
+                           FontSize="15" FontWeight="Bold" Foreground="#F8FAFC"
+                           VerticalAlignment="Center" HorizontalAlignment="Left"/>
+
+                <Button x:Name="BtnClose" Content="✕" Width="28" Height="28"
+                        HorizontalAlignment="Right" VerticalAlignment="Center"
+                        FontSize="13" FontWeight="Bold"
+                        Foreground="#94A3B8" Background="#334155"
+                        Style="{StaticResource DialogButtonStyle}"
+                        Click="BtnClose_Click"/>
+            </Grid>
+
+            <!-- Row 1: Search Input & Search Button -->
+            <Grid Grid.Row="1" Margin="0,0,0,12">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <TextBox x:Name="TxtSearchQuery" Grid.Column="0" Height="34"
+                         Padding="10,0" VerticalContentAlignment="Center"
+                         FontSize="13" Foreground="#FFFFFF"
+                         Background="#0F172A" BorderBrush="#475569"
+                         KeyDown="TxtSearchQuery_KeyDown"/>
+
+                <Button x:Name="BtnSearch" Grid.Column="1" Content="بحث"
+                        Width="76" Height="34" Margin="8,0,0,0"
+                        FontSize="12" FontWeight="SemiBold"
+                        Foreground="#FFFFFF" Background="#10B981"
+                        Style="{StaticResource DialogButtonStyle}"
+                        Click="BtnSearch_Click"/>
+            </Grid>
+
+            <!-- Row 2: Search Results List -->
+            <Border Grid.Row="2" CornerRadius="8" BorderThickness="1"
+                    Background="#0F172A" BorderBrush="#334155" Margin="0,0,0,12">
+                <ListBox x:Name="LstResults" 
+                         Background="Transparent" BorderThickness="0"
+                         Foreground="#FFFFFF"
+                         ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                         MouseDoubleClick="LstResults_MouseDoubleClick">
+                    <ListBox.ItemTemplate>
+                        <DataTemplate>
+                            <Border Padding="10,8" Margin="0,1" CornerRadius="6" Background="Transparent">
+                                <Grid>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="Auto"/>
+                                    </Grid.RowDefinitions>
+                                    <TextBlock Grid.Row="0" Text="{Binding NameAr}" FontSize="13" FontWeight="Bold" Foreground="#38BDF8"/>
+                                    <TextBlock Grid.Row="1" Text="{Binding CountryAr}" FontSize="11" Foreground="#94A3B8" Margin="0,2,0,0"/>
+                                </Grid>
+                            </Border>
+                        </DataTemplate>
+                    </ListBox.ItemTemplate>
+                </ListBox>
+            </Border>
+
+            <!-- Row 3: Bottom Status & Actions -->
+            <Grid Grid.Row="3">
+                <TextBlock x:Name="TxtStatus" Text="" FontSize="11" Foreground="#94A3B8"
+                           VerticalAlignment="Center" HorizontalAlignment="Left" TextTrimming="CharacterEllipsis" MaxWidth="220"/>
+
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                    <Button x:Name="BtnCancel" Content="إلغاء" Width="80" Height="32" Margin="0,0,8,0"
+                            FontSize="12" Foreground="#CBD5E1" Background="#334155"
+                            Style="{StaticResource DialogButtonStyle}"
+                            Click="BtnCancel_Click"/>
+
+                    <Button x:Name="BtnSelect" Content="اختيار" Width="90" Height="32"
+                            FontSize="12" FontWeight="Bold" Foreground="#FFFFFF" Background="#10B981"
+                            Style="{StaticResource DialogButtonStyle}"
+                            Click="BtnSelect_Click"/>
+                </StackPanel>
+            </Grid>
+        </Grid>
+    </Border>
+</Window>

@@ -256,8 +256,9 @@ public partial class TaskbarFlyoutWindow : Window
 
         // Location & Colorful Windows 11 Weather
         string wilaya = isAr ? _config.WilayaAr : _config.WilayaEn;
-        string country = isAr ? "الجزائر" : "Algeria";
-        TxtLocation.Text = $"{wilaya} — {country}";
+        string country = isAr ? _config.CountryAr : _config.CountryEn;
+        if (string.IsNullOrEmpty(country)) country = isAr ? "الجزائر" : "Algeria";
+        TxtLocation.Text = (country == wilaya) ? wilaya : $"{wilaya} — {country}";
 
         if (weatherResult != null && weatherResult.Temperature.HasValue)
         {
