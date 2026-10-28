@@ -56,7 +56,7 @@ Tailor every aspect of the application: select from 100+ countries and 720+ stat
 <p align="center">
   <img src="screenshots/settings_audio_notifications.jpg" width="48%" alt="Location, Adhan & Notifications Settings" />
   &nbsp;
-  <img src="screenshots/settings_theme_startup.jpg" width="48%" alt="Theme, Language & Windows Startup Settings" />
+  <img src="screenshots/settings_theme_startup1.jpg" width="48%" alt="Theme, Language & Windows Startup Settings" />
 </p>
 
 ---
