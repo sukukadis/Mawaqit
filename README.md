@@ -54,7 +54,7 @@ A dedicated, borderless Fluent widget sitting directly on your Windows taskbar n
 Tailor every aspect of the application: select from 100+ countries and 720+ states/provinces (arranged alphabetically), search any global city, select from 23 calculation methods, pick and test custom Adhan & Pre-prayer reminder `.mp3` audio files, customize notification timing, toggle taskbar widget options, switch between Dark/Light themes, and enable Windows auto-start.
 
 <p align="center">
-  <img src="screenshots/settings_audio_notification2s.jpg" width="48%" alt="Location, Adhan & Notifications Settings" />
+  <img src="screenshots/settings_audio_notifications.jpg" width="48%" alt="Location, Adhan & Notifications Settings" />
   &nbsp;
   <img src="screenshots/settings_theme_startup.jpg" width="48%" alt="Theme, Language & Windows Startup Settings" />
 </p>
