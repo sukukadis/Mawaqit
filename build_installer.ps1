@@ -68,6 +68,13 @@ if (Test-Path $outputDir) {
     New-Item -ItemType Directory -Path $outputDir -Force | Out-Null
 }
 
+# Clean stale intermediate build outputs to guarantee fresh binaries
+Write-Host "--> Cleaning stale build caches..." -ForegroundColor Yellow
+if (Test-Path "$ScriptDir\publish") { Remove-Item "$ScriptDir\publish" -Recurse -Force -ErrorAction SilentlyContinue }
+if (Test-Path "$ScriptDir\publish_sc") { Remove-Item "$ScriptDir\publish_sc" -Recurse -Force -ErrorAction SilentlyContinue }
+if (Test-Path "$ScriptDir\bin\Release") { Remove-Item "$ScriptDir\bin\Release" -Recurse -Force -ErrorAction SilentlyContinue }
+if (Test-Path "$ScriptDir\obj\Release") { Remove-Item "$ScriptDir\obj\Release" -Recurse -Force -ErrorAction SilentlyContinue }
+
 # 2. Determine build modes (default: build both)
 $buildStandard = $true
 $buildStandalone = $true
