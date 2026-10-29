@@ -65,8 +65,6 @@ public class AppConfig
     [JsonPropertyName("reminder_popup_enabled")]
     public bool ReminderPopupEnabled { get; set; } = true;
 
-    [JsonPropertyName("suppress_popup_in_fullscreen")]
-    public bool SuppressPopupInFullscreen { get; set; } = true;
 
     [JsonPropertyName("taskbar_widget_enabled")]
     public bool TaskbarWidgetEnabled { get; set; } = true;

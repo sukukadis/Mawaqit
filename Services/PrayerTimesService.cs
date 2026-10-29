@@ -45,7 +45,7 @@ public class PrayerTimesService
             try
             {
                 using var request = new HttpRequestMessage(HttpMethod.Get, url);
-                request.Headers.Add("User-Agent", "Mawaqit/2.2.4");
+                request.Headers.Add("User-Agent", "Mawaqit/2.2.5");
 
                 var response = await Http.SendAsync(request);
                 if (!response.IsSuccessStatusCode)
