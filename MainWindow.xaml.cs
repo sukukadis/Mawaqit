@@ -419,7 +419,7 @@ public partial class MainWindow : Window
         TxtReminderMinutes.Foreground = _theme.Text;
         TxtReminderMinutes.BorderBrush = _theme.Border;
 
-        foreach (var chk in new[] { ChkAdhanEnable, ChkReminderEnable, ChkAdhanPopup, ChkReminderPopup, ChkTaskbarWidgetEnable, ChkTaskbarWidgetShowSeconds, ChkStartup })
+        foreach (var chk in new[] { ChkAdhanEnable, ChkReminderEnable, ChkAdhanPopup, ChkReminderPopup, ChkSuppressPopupFullscreen, ChkTaskbarWidgetEnable, ChkTaskbarWidgetShowSeconds, ChkStartup })
         {
             chk.Foreground = _theme.Text;
         }
@@ -494,6 +494,7 @@ public partial class MainWindow : Window
         SecNotificationsTitle.Text = LocalizationService.Get("sec_notifications", lang);
         ChkAdhanPopup.Content = LocalizationService.Get("adhan_popup_enable", lang);
         ChkReminderPopup.Content = LocalizationService.Get("reminder_popup_enable", lang);
+        ChkSuppressPopupFullscreen.Content = LocalizationService.Get("suppress_popup_fullscreen", lang);
 
         SecTaskbarWidgetTitle.Text = LocalizationService.Get("sec_taskbar_widget", lang);
         ChkTaskbarWidgetEnable.Content = LocalizationService.Get("taskbar_widget_enable", lang);
@@ -669,6 +670,7 @@ public partial class MainWindow : Window
 
         ChkAdhanPopup.IsChecked = _config.AdhanPopupEnabled;
         ChkReminderPopup.IsChecked = _config.ReminderPopupEnabled;
+        ChkSuppressPopupFullscreen.IsChecked = _config.SuppressPopupInFullscreen;
 
         ChkTaskbarWidgetEnable.IsChecked = _config.TaskbarWidgetEnabled;
         ChkTaskbarWidgetShowSeconds.IsChecked = _config.TaskbarWidgetShowSeconds;
@@ -1041,7 +1043,7 @@ public partial class MainWindow : Window
                     _adhanPlayed.Add(key);
                     Logger.LogStartup($"Adhan PLAYED: {name} at {now:HH:mm:ss}");
 
-                    if (_config.AdhanPopupEnabled)
+                    if (_config.AdhanPopupEnabled && (!_config.SuppressPopupInFullscreen || !FullscreenHelper.IsFullscreenRunning()))
                     {
                         string prayerDisp = GetPrayerDisplayName(name, now);
                         var toast = new ToastNotificationWindow(
@@ -1089,7 +1091,7 @@ public partial class MainWindow : Window
                     }
                 }
 
-                if (_config.ReminderPopupEnabled)
+                if (_config.ReminderPopupEnabled && (!_config.SuppressPopupInFullscreen || !FullscreenHelper.IsFullscreenRunning()))
                 {
                     string prayerDisp = GetPrayerDisplayName(name, now);
                     var toast = new ToastNotificationWindow(
@@ -1524,6 +1526,12 @@ public partial class MainWindow : Window
     private void ChkReminderPopup_Changed(object sender, RoutedEventArgs e)
     {
         _config.ReminderPopupEnabled = ChkReminderPopup.IsChecked == true;
+        _config.Save();
+    }
+
+    private void ChkSuppressPopupFullscreen_Changed(object sender, RoutedEventArgs e)
+    {
+        _config.SuppressPopupInFullscreen = ChkSuppressPopupFullscreen.IsChecked == true;
         _config.Save();
     }
 

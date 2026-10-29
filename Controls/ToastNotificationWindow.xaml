@@ -8,6 +8,8 @@
         Background="Transparent"
         Topmost="True"
         ShowInTaskbar="False"
+        ShowActivated="False"
+        Focusable="False"
         ResizeMode="NoResize">
 
     <Border x:Name="RootBorder" CornerRadius="10" BorderThickness="1">
