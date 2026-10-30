@@ -5,10 +5,12 @@ using System.ComponentModel;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using System.Windows.Interop;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Threading;
@@ -108,6 +110,100 @@ public partial class MainWindow : Window
     private string _nextPrayerName = "";
     private DateTime? _nextPrayerTime;
 
+    [DllImport("user32.dll")]
+    private static extern uint RegisterWindowMessage(string lpString);
+    private uint _msgTaskbarCreated;
+
+    protected override void OnSourceInitialized(EventArgs e)
+    {
+        base.OnSourceInitialized(e);
+        try
+        {
+            var helper = new WindowInteropHelper(this);
+            if (helper.Handle != IntPtr.Zero)
+            {
+                var source = HwndSource.FromHwnd(helper.Handle);
+                source?.AddHook(MainWndProc);
+                _msgTaskbarCreated = RegisterWindowMessage("TaskbarCreated");
+            }
+        }
+        catch { }
+    }
+
+    private IntPtr MainWndProc(IntPtr hwnd, int msg, IntPtr wParam, IntPtr lParam, ref bool handled)
+    {
+        if (_msgTaskbarCreated != 0 && msg == (int)_msgTaskbarCreated)
+        {
+            Logger.LogStartup("Explorer restart detected in MainWindow (TaskbarCreated)");
+            Dispatcher.InvokeAsync(async () =>
+            {
+                await Task.Delay(1000);
+                if (_config.TaskbarWidgetEnabled && !_isShuttingDown)
+                {
+                    var widget = EnsureTaskbarWidget();
+                    widget.Show();
+                    widget.AttachToTaskbar();
+                    widget.RepositionToTaskbar();
+                    UpdateBanner();
+                }
+            });
+            handled = true;
+        }
+        return IntPtr.Zero;
+    }
+
+    private TaskbarWidgetWindow EnsureTaskbarWidget()
+    {
+        if (_taskbarWidget != null && !_taskbarWidget.IsClosed)
+        {
+            return _taskbarWidget;
+        }
+
+        try { _taskbarWidget?.SafeClose(); } catch { }
+
+        _taskbarWidget = new TaskbarWidgetWindow(
+            _config,
+            () => _theme,
+            () => _isDark,
+            onToggleFlyout: () => Dispatcher.Invoke(ToggleTaskbarFlyout),
+            onOpenSettings: () => Dispatcher.Invoke(OpenSettingsTab),
+            onShowApp: () => Dispatcher.Invoke(ShowAndActivate),
+            onCloseApp: () => Dispatcher.Invoke(QuitApp)
+        );
+
+        _taskbarWidget.VisibilityChanged += (vis) =>
+        {
+            Dispatcher.Invoke(() =>
+            {
+                ChkTaskbarWidgetEnable.IsChecked = vis;
+                _trayService.UpdateTaskbarWidgetCheck(vis);
+            });
+        };
+
+        _taskbarWidget.WidgetRecreateRequested += () =>
+        {
+            Dispatcher.Invoke(() =>
+            {
+                if (_config.TaskbarWidgetEnabled && !_isShuttingDown)
+                {
+                    Logger.LogStartup("Recreating taskbar widget after HWND destruction / Explorer change");
+                    var widget = EnsureTaskbarWidget();
+                    widget.ApplyTheme(_theme, _isDark);
+                    widget.ApplyLanguage(_config.Language);
+                    widget.Show();
+                    widget.AttachToTaskbar();
+                    widget.RepositionToTaskbar();
+                    UpdateBanner();
+                }
+            });
+        };
+
+        _taskbarWidget.ApplyTheme(_theme, _isDark);
+        _taskbarWidget.ApplyLanguage(_config.Language);
+
+        return _taskbarWidget;
+    }
+
     public MainWindow(bool startHidden = false)
     {
         InitializeComponent();
@@ -146,24 +242,7 @@ public partial class MainWindow : Window
         _flyoutWindow.ApplyTheme(_theme, _isDark);
 
         // Taskbar Widget (Awqat Salaat WinUI style taskbar tile button)
-        _taskbarWidget = new TaskbarWidgetWindow(
-            _config,
-            () => _theme,
-            () => _isDark,
-            onToggleFlyout: () => Dispatcher.Invoke(ToggleTaskbarFlyout),
-            onOpenSettings: () => Dispatcher.Invoke(OpenSettingsTab),
-            onShowApp: () => Dispatcher.Invoke(ShowAndActivate),
-            onCloseApp: () => Dispatcher.Invoke(QuitApp)
-        );
-
-        _taskbarWidget.VisibilityChanged += (vis) =>
-        {
-            Dispatcher.Invoke(() =>
-            {
-                ChkTaskbarWidgetEnable.IsChecked = vis;
-                _trayService.UpdateTaskbarWidgetCheck(vis);
-            });
-        };
+        _taskbarWidget = EnsureTaskbarWidget();
 
         _trayService.TaskbarWidgetToggled += (enabled) =>
         {
@@ -172,12 +251,14 @@ public partial class MainWindow : Window
                 ChkTaskbarWidgetEnable.IsChecked = enabled;
                 if (enabled)
                 {
-                    _taskbarWidget.Show();
-                    _taskbarWidget.RepositionToTaskbar();
+                    var widget = EnsureTaskbarWidget();
+                    widget.Show();
+                    widget.RepositionToTaskbar();
+                    UpdateBanner();
                 }
                 else
                 {
-                    _taskbarWidget.Hide();
+                    _taskbarWidget?.Hide();
                 }
             });
         };
@@ -203,6 +284,19 @@ public partial class MainWindow : Window
 
     private void InitializeApp(bool startHidden)
     {
+        // Load cached prayer times immediately so the taskbar widget and banner
+        // display current prayer times from second 0 without waiting for network API
+        var cachedTimings = PrayerTimesService.LoadCachedRaw();
+        if (cachedTimings != null)
+        {
+            _rawTimings = cachedTimings;
+            string currentWilayaName = _config.Language == "ar" ? _config.WilayaAr : _config.WilayaEn;
+            _prayerData = PrayerTimesService.ApplyTuning(_rawTimings, currentWilayaName, _config);
+            _prayerDateTimes = PrayerTimesService.ComputePrayerDateTimes(_prayerData);
+            RenderPrayerCards();
+            UpdateBanner();
+        }
+
         // Load cached weather immediately so user never sees blank or --°C
         var cachedWeather = WeatherService.LoadCached();
         if (cachedWeather != null && cachedWeather.Temperature.HasValue)
@@ -229,8 +323,10 @@ public partial class MainWindow : Window
 
         if (_config.TaskbarWidgetEnabled)
         {
-            _taskbarWidget?.Show();
-            _taskbarWidget?.RepositionToTaskbar();
+            var widget = EnsureTaskbarWidget();
+            widget.Show();
+            widget.RepositionToTaskbar();
+            UpdateBanner();
         }
 
         if (_config.StartWithWindows)
@@ -246,7 +342,8 @@ public partial class MainWindow : Window
 
     public void ToggleTaskbarFlyout()
     {
-        if (_taskbarWidget == null || _flyoutWindow == null) return;
+        if (_flyoutWindow == null) return;
+        var widget = EnsureTaskbarWidget();
 
         // Debounce: prevent duplicate toggles within 250ms
         if ((DateTime.UtcNow - _lastToggleFlyoutTime).TotalMilliseconds < 250)
@@ -276,7 +373,7 @@ public partial class MainWindow : Window
                 _audioService.IsPlaying,
                 _lastWeatherResult
             );
-            var bounds = _taskbarWidget.GetScreenBounds();
+            var bounds = widget.GetScreenBounds();
             _flyoutWindow.ShowAboveWidget(
                 bounds.left,
                 bounds.top,
@@ -938,13 +1035,17 @@ public partial class MainWindow : Window
             }
         }
 
-        if (isElapsed)
+        if (_config.TaskbarWidgetEnabled)
         {
-            _taskbarWidget?.UpdatePrayerData(activePrayerName, activePrayerTimeStr, activeIcon, diff, true, elapsedSpan);
-        }
-        else
-        {
-            _taskbarWidget?.UpdatePrayerData(displayPrayer, timeStr, prayerIcon, diff, false, TimeSpan.Zero);
+            var widget = EnsureTaskbarWidget();
+            if (isElapsed)
+            {
+                widget.UpdatePrayerData(activePrayerName, activePrayerTimeStr, activeIcon, diff, true, elapsedSpan);
+            }
+            else
+            {
+                widget.UpdatePrayerData(displayPrayer, timeStr, prayerIcon, diff, false, TimeSpan.Zero);
+            }
         }
 
         if (_flyoutWindow != null && _flyoutWindow.IsVisible)
@@ -1539,8 +1640,10 @@ public partial class MainWindow : Window
 
         if (isChecked)
         {
-            _taskbarWidget?.Show();
-            _taskbarWidget?.RepositionToTaskbar();
+            var widget = EnsureTaskbarWidget();
+            widget.Show();
+            widget.AttachToTaskbar();
+            widget.RepositionToTaskbar();
             UpdateBanner();
         }
         else
@@ -1565,7 +1668,9 @@ public partial class MainWindow : Window
         _config.TaskbarWidgetPosY = -1;
         _config.TaskbarWidgetMonitor = 0;
         _config.Save();
-        _taskbarWidget?.AttachToTaskbar();
+        var widget = EnsureTaskbarWidget();
+        widget.AttachToTaskbar();
+        widget.RepositionToTaskbar();
     }
 
     private void RbLang_Checked(object sender, RoutedEventArgs e)

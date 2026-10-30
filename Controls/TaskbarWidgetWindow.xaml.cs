@@ -68,6 +68,9 @@ public partial class TaskbarWidgetWindow : Window
     private static extern bool SetWindowPos(IntPtr hWnd, IntPtr hWndInsertAfter, int X, int Y, int cx, int cy, uint uFlags);
 
     [DllImport("user32.dll")]
+    private static extern bool ShowWindow(IntPtr hWnd, int nCmdShow);
+
+    [DllImport("user32.dll")]
     private static extern uint RegisterWindowMessage(string lpString);
 
     private const int GWL_STYLE = -16;
@@ -75,6 +78,7 @@ public partial class TaskbarWidgetWindow : Window
     private const int WS_POPUP = unchecked((int)0x80000000);
     private const int WS_CHILD = 0x40000000;
     private const int WS_CLIPSIBLINGS = 0x04000000;
+    private const int WS_VISIBLE = 0x10000000;
     private const int WS_EX_TOOLWINDOW = 0x00000080;
     private const int WS_EX_NOACTIVATE = 0x08000000;
 
@@ -83,7 +87,13 @@ public partial class TaskbarWidgetWindow : Window
     private const uint SWP_NOMOVE = 0x0002;
     private const uint SWP_NOZORDER = 0x0004;
     private const uint SWP_NOACTIVATE = 0x0010;
+    private const uint SWP_FRAMECHANGED = 0x0020;
     private const uint SWP_SHOWWINDOW = 0x0040;
+
+    private const int SW_SHOWNOACTIVATE = 4;
+    private const int SW_SHOWNA = 8;
+    private const int WM_DESTROY = 0x0002;
+    private const int WM_NCDESTROY = 0x0082;
 
     #endregion
 
@@ -114,6 +124,11 @@ public partial class TaskbarWidgetWindow : Window
     private bool _win32HasDragged;
 
     public event Action<bool>? VisibilityChanged;
+    public event Action? WidgetRecreateRequested;
+    public bool IsClosed { get; private set; }
+
+    private int _startupRetries;
+    private DateTime _lastFlyoutClickTime = DateTime.MinValue;
 
     public TaskbarWidgetWindow(
         AppConfig config,
@@ -139,11 +154,25 @@ public partial class TaskbarWidgetWindow : Window
         ApplyLanguage(_config.Language);
         SyncSettingsToggles();
 
+        Closed += (s, e) =>
+        {
+            IsClosed = true;
+            _isAttachedToTray = false;
+            _hwndTray = IntPtr.Zero;
+        };
+
         // Periodic watchdog timer: maintains integration with the taskbar of the configured monitor
         _watchdogTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(2) };
         _watchdogTimer.Tick += (s, e) =>
         {
-            if (_isClosing || !IsVisible || _isMouseDown || _hasDragged) return;
+            if (_isClosing || IsClosed || _isMouseDown || _hasDragged) return;
+            if (!_config.TaskbarWidgetEnabled) return;
+
+            // Ensure window remains visible in WPF
+            if (Visibility != Visibility.Visible)
+            {
+                Visibility = Visibility.Visible;
+            }
 
             var screens = System.Windows.Forms.Screen.AllScreens;
             int monitorIdx = _config.TaskbarWidgetMonitor;
@@ -151,20 +180,28 @@ public partial class TaskbarWidgetWindow : Window
             var targetScreen = screens[monitorIdx];
             IntPtr expectedTray = GetTaskbarForScreen(targetScreen);
 
+            var helper = new WindowInteropHelper(this);
+            if (helper.Handle == IntPtr.Zero || !IsWindow(helper.Handle)) return;
+
             if (expectedTray != IntPtr.Zero)
             {
-                var helper = new WindowInteropHelper(this);
-                if (helper.Handle != IntPtr.Zero)
+                IntPtr currentParent = GetParent(helper.Handle);
+                if (!_isAttachedToTray || _hwndTray != expectedTray || currentParent != expectedTray || !IsWindow(_hwndTray))
                 {
-                    IntPtr currentParent = GetParent(helper.Handle);
-                    if (_hwndTray != expectedTray || currentParent != expectedTray || !IsWindow(_hwndTray))
-                    {
-                        AttachToTaskbar();
-                    }
-                    else if (_config.TaskbarWidgetDockMode == "tray_left")
-                    {
-                        RepositionToTaskbar();
-                    }
+                    AttachToTaskbar();
+                }
+                else if (_config.TaskbarWidgetDockMode == "tray_left")
+                {
+                    RepositionToTaskbar();
+                }
+            }
+            else
+            {
+                // If Explorer was still loading (Windows boot), retry attaching
+                if (_startupRetries < 15)
+                {
+                    _startupRetries++;
+                    AttachToTaskbar();
                 }
             }
         };
@@ -174,13 +211,22 @@ public partial class TaskbarWidgetWindow : Window
         {
             AttachToTaskbar();
             // During Windows boot / login, taskbar layout shifts as system tray icons load;
-            // reposition after brief delays so the widget is always docked cleanly in place.
+            // retry cleanly across initial seconds so the widget is always docked in place.
             Dispatcher.InvokeAsync(async () =>
             {
-                await System.Threading.Tasks.Task.Delay(500);
-                if (!_isClosing && IsVisible) AttachToTaskbar();
-                await System.Threading.Tasks.Task.Delay(1500);
-                if (!_isClosing && IsVisible) RepositionToTaskbar();
+                for (int i = 0; i < 5; i++)
+                {
+                    await System.Threading.Tasks.Task.Delay(1000);
+                    if (_isClosing || IsClosed || !_config.TaskbarWidgetEnabled) break;
+                    if (!_isAttachedToTray)
+                    {
+                        AttachToTaskbar();
+                    }
+                    else
+                    {
+                        RepositionToTaskbar();
+                    }
+                }
             });
         };
 
@@ -218,14 +264,40 @@ public partial class TaskbarWidgetWindow : Window
         catch { }
     }
 
+    private void TriggerFlyoutToggle()
+    {
+        if ((DateTime.UtcNow - _lastFlyoutClickTime).TotalMilliseconds < 350)
+        {
+            return;
+        }
+        _lastFlyoutClickTime = DateTime.UtcNow;
+        _onToggleFlyout?.Invoke();
+    }
+
     private IntPtr WndProc(IntPtr hwnd, int msg, IntPtr wParam, IntPtr lParam, ref bool handled)
     {
+        if (msg == WM_DESTROY || msg == WM_NCDESTROY)
+        {
+            IsClosed = true;
+            _hwndTray = IntPtr.Zero;
+            _isAttachedToTray = false;
+            WidgetRecreateRequested?.Invoke();
+            return IntPtr.Zero;
+        }
+
         if (_msgTaskbarCreated != 0 && msg == (int)_msgTaskbarCreated)
         {
             // Windows Explorer restarted -> re-inject natively into taskbar
             _hwndTray = IntPtr.Zero;
             _isAttachedToTray = false;
-            AttachToTaskbar();
+            if (IsClosed)
+            {
+                WidgetRecreateRequested?.Invoke();
+            }
+            else
+            {
+                AttachToTaskbar();
+            }
             handled = true;
         }
         else if (msg == WM_LBUTTONDOWN)
@@ -249,7 +321,7 @@ public partial class TaskbarWidgetWindow : Window
             if (_win32IsDown && !_win32HasDragged)
             {
                 _win32IsDown = false;
-                _onToggleFlyout?.Invoke();
+                TriggerFlyoutToggle();
             }
             _win32IsDown = false;
         }
@@ -305,13 +377,13 @@ public partial class TaskbarWidgetWindow : Window
     /// </summary>
     public void AttachToTaskbar()
     {
-        if (_isClosing) return;
+        if (_isClosing || IsClosed) return;
 
         try
         {
             var helper = new WindowInteropHelper(this);
             IntPtr hwnd = helper.Handle;
-            if (hwnd == IntPtr.Zero) return;
+            if (hwnd == IntPtr.Zero || !IsWindow(hwnd)) return;
 
             var screens = System.Windows.Forms.Screen.AllScreens;
             int monitorIdx = _config.TaskbarWidgetMonitor;
@@ -333,10 +405,10 @@ public partial class TaskbarWidgetWindow : Window
                     // Reparent into target taskbar
                     SetParent(hwnd, hwndTray);
 
-                    // Change window style to WS_CHILD and WS_CLIPSIBLINGS, remove WS_POPUP
+                    // Change window style to WS_CHILD and WS_CLIPSIBLINGS, retain WS_VISIBLE, remove WS_POPUP
                     int style = GetWindowLong(hwnd, GWL_STYLE);
                     style &= ~WS_POPUP;
-                    style |= WS_CHILD | WS_CLIPSIBLINGS;
+                    style |= WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE;
                     SetWindowLong(hwnd, GWL_STYLE, style);
 
                     int exStyle = GetWindowLong(hwnd, GWL_EXSTYLE);
@@ -344,9 +416,19 @@ public partial class TaskbarWidgetWindow : Window
                     SetWindowLong(hwnd, GWL_EXSTYLE, exStyle);
 
                     _isAttachedToTray = true;
+
+                    // Ensure window is shown in new parent coordinate space without stealing focus
+                    ShowWindow(hwnd, SW_SHOWNOACTIVATE);
                 }
 
-                RepositionToTaskbar();
+                if (_config.TaskbarWidgetEnabled)
+                {
+                    if (Visibility != Visibility.Visible)
+                    {
+                        Visibility = Visibility.Visible;
+                    }
+                    RepositionToTaskbar();
+                }
             }
             else
             {
@@ -357,18 +439,30 @@ public partial class TaskbarWidgetWindow : Window
 
                 int style = GetWindowLong(hwnd, GWL_STYLE);
                 style &= ~WS_CHILD;
-                style |= WS_POPUP;
+                style |= WS_POPUP | WS_VISIBLE;
                 SetWindowLong(hwnd, GWL_STYLE, style);
 
                 int exStyle = GetWindowLong(hwnd, GWL_EXSTYLE);
                 exStyle |= WS_EX_TOOLWINDOW | WS_EX_NOACTIVATE;
                 SetWindowLong(hwnd, GWL_EXSTYLE, exStyle);
 
-                SetWindowPos(hwnd, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE | SWP_SHOWWINDOW);
-                RepositionToTaskbar();
+                SetWindowPos(hwnd, HWND_TOPMOST, 0, 0, 0, 0,
+                    SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE | SWP_FRAMECHANGED | SWP_SHOWWINDOW);
+
+                if (_config.TaskbarWidgetEnabled)
+                {
+                    if (Visibility != Visibility.Visible)
+                    {
+                        Visibility = Visibility.Visible;
+                    }
+                    RepositionToTaskbar();
+                }
             }
         }
-        catch { }
+        catch (Exception ex)
+        {
+            Logger.LogError($"AttachToTaskbar exception: {ex.Message}");
+        }
     }
 
     private static bool IsWindows11()
@@ -796,15 +890,54 @@ public partial class TaskbarWidgetWindow : Window
         }
     }
 
+    private int GetNotificationAreaLeft(IntPtr hwndTray, RECT trayRect, double dpiX)
+    {
+        int trayWidth = trayRect.Right - trayRect.Left;
+        int defaultRight = trayWidth - (int)(8 * dpiX);
+
+        IntPtr hwndNotify = FindWindowEx(hwndTray, IntPtr.Zero, "TrayNotifyWnd", null);
+        if (hwndNotify != IntPtr.Zero && GetWindowRect(hwndNotify, out RECT notifyRect) && notifyRect.Right > notifyRect.Left)
+        {
+            int notifyLeft = notifyRect.Left - trayRect.Left;
+            if (notifyLeft > 10 && notifyLeft <= trayWidth)
+            {
+                return notifyLeft - (int)(4 * dpiX);
+            }
+        }
+
+        // Secondary taskbar or Windows 11 child containers, check rightmost child windows
+        int rightmost = defaultRight;
+        IntPtr child = IntPtr.Zero;
+        var helper = new WindowInteropHelper(this);
+        IntPtr myHwnd = helper.Handle;
+
+        while ((child = FindWindowEx(hwndTray, child, null, null)) != IntPtr.Zero)
+        {
+            if (child != myHwnd && IsWindowVisible(child))
+            {
+                if (GetWindowRect(child, out RECT cr) && cr.Right > cr.Left)
+                {
+                    int cl = cr.Left - trayRect.Left;
+                    if (cl > trayWidth / 2 && cl < rightmost)
+                    {
+                        rightmost = cl - (int)(4 * dpiX);
+                    }
+                }
+            }
+        }
+
+        return rightmost;
+    }
+
     public void RepositionToTaskbar()
     {
-        if (_isClosing || (_hasDragged && _isMouseDown)) return;
+        if (_isClosing || IsClosed || (_hasDragged && _isMouseDown)) return;
 
         try
         {
             var helper = new WindowInteropHelper(this);
             IntPtr hwnd = helper.Handle;
-            if (hwnd == IntPtr.Zero) return;
+            if (hwnd == IntPtr.Zero || !IsWindow(hwnd)) return;
 
             var dpi = VisualTreeHelper.GetDpi(this);
             double dpiX = dpi.DpiScaleX > 0 ? dpi.DpiScaleX : 1.0;
@@ -818,18 +951,33 @@ public partial class TaskbarWidgetWindow : Window
                 int trayHeight = trayRect.Bottom - trayRect.Top;
                 int targetY = Math.Max(0, (trayHeight - pixelHeight) / 2);
 
-                UpdateTaskbarZones(_hwndTray, pixelWidth, dpiX);
-
                 int targetX;
                 if (_config.TaskbarWidgetDockMode == "custom" && _config.TaskbarWidgetPosX >= 0)
                 {
+                    UpdateTaskbarZones(_hwndTray, pixelWidth, dpiX);
                     targetX = (int)_config.TaskbarWidgetPosX;
                     targetX = ClampToFreeZones(targetX);
                 }
                 else
                 {
                     // Default: dock immediately to the left of the system notification area (TrayNotifyWnd / Windows Date)
-                    targetX = _maxRightZone;
+                    int notifyLeft = GetNotificationAreaLeft(_hwndTray, trayRect, dpiX);
+                    targetX = notifyLeft - pixelWidth;
+                }
+
+                // Prevent jitter: if already at the target position and size, do not call SetWindowPos
+                if (GetWindowRect(hwnd, out RECT curRect))
+                {
+                    int curX = curRect.Left - trayRect.Left;
+                    int curY = curRect.Top - trayRect.Top;
+                    int curW = curRect.Right - curRect.Left;
+                    int curH = curRect.Bottom - curRect.Top;
+
+                    if (Math.Abs(curX - targetX) <= 1 && Math.Abs(curY - targetY) <= 1 &&
+                        curW == pixelWidth && curH == pixelHeight)
+                    {
+                        return;
+                    }
                 }
 
                 SetWindowPos(hwnd, IntPtr.Zero, targetX, targetY, pixelWidth, pixelHeight,
@@ -861,7 +1009,10 @@ public partial class TaskbarWidgetWindow : Window
                 }
             }
         }
-        catch { }
+        catch (Exception ex)
+        {
+            Logger.LogError($"RepositionToTaskbar exception: {ex.Message}");
+        }
     }
 
     /// <summary>
@@ -1102,7 +1253,7 @@ public partial class TaskbarWidgetWindow : Window
         else if (wasMouseDown)
         {
             // Clean left click: Toggle flyout window right above the button!
-            _onToggleFlyout?.Invoke();
+            TriggerFlyoutToggle();
             e.Handled = true;
         }
     }
@@ -1204,6 +1355,7 @@ public partial class TaskbarWidgetWindow : Window
     public void SafeClose()
     {
         _isClosing = true;
+        IsClosed = true;
         _watchdogTimer.Stop();
         try
         {
