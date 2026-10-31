@@ -13,3 +13,5 @@ installer_output/
 *.log
 *.tmp
 *.zip
+*.tar.gz
+*.py

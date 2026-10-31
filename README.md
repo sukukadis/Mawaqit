@@ -16,7 +16,7 @@
   <img src="https://img.shields.io/badge/Language-C%23%2012-239120?logo=csharp" alt="Language: C#" />
   <img src="https://img.shields.io/badge/Coverage-Worldwide%20(100%2B%20Countries)-10B981" alt="Coverage: Worldwide" />
   <img src="https://img.shields.io/badge/Locations-720%2B%20States%20%26%20Cities-0284C7" alt="Locations: 720+ States" />
-<a href="https://github.com/sukukadis/Mawaqit/releases/download/Mawaqit/Mawaqit-2.2.6-Standalone-Setup.exe">
+<a href="https://github.com/sukukadis/Mawaqit/releases/download/v2.2.6/Mawaqit-2.2.6-Standalone-Setup.exe">
   <img src="https://img.shields.io/badge/Download-Standalone%20Setup-D97706?logo=windows&logoColor=white" alt="Download Mawaqit" />
 </a>
 </p>
