@@ -148,6 +148,15 @@ public partial class TaskbarWidgetWindow : Window
         _onCloseApp = onCloseApp ?? (() => Application.Current.Shutdown());
 
         InitializeComponent();
+        UpdateTaskbarTextColors();
+        try
+        {
+            Microsoft.Win32.SystemEvents.UserPreferenceChanged += (s, e) =>
+            {
+                Dispatcher.Invoke(() => UpdateTaskbarTextColors());
+            };
+        }
+        catch { }
         System.Windows.Controls.ToolTipService.SetIsEnabled(RootBorder, false);
         RootBorder.ToolTip = null;
 
@@ -1059,7 +1068,14 @@ public partial class TaskbarWidgetWindow : Window
         bool isAr = _config.Language == "ar";
         _isElapsedState = isElapsed;
 
-        TxtPrayerName.Text = prayerName;
+        if (DateTime.Today.DayOfWeek == DayOfWeek.Friday && (prayerName.Contains("الظهر") || prayerName.Contains("Dhuhr")))
+        {
+            TxtPrayerName.Text = isAr ? "الجمعة 🕋" : "Jumu'ah 🕋";
+        }
+        else
+        {
+            TxtPrayerName.Text = prayerName;
+        }
         TxtPrayerTime.Text = prayerTime;
 
         bool showSec = _config.TaskbarWidgetShowSeconds;
@@ -1111,6 +1127,31 @@ public partial class TaskbarWidgetWindow : Window
         RootBorder.Background = Brushes.Transparent;
         RootBorder.BorderThickness = new Thickness(0);
         NotificationIndicator.Background = theme.Accent;
+        UpdateTaskbarTextColors();
+    }
+
+    public void UpdateTaskbarTextColors()
+    {
+        bool isLightTaskbar = IsWindowsTaskbarLight();
+        Brush textBrush = isLightTaskbar ? Brushes.Black : Brushes.White;
+
+        TxtPrayerName.Foreground = textBrush;
+        TxtPrayerTime.Foreground = textBrush;
+        TxtTimerLabel.Foreground = textBrush;
+        TxtPlusSign.Foreground = textBrush;
+        TxtCountdown.Foreground = textBrush;
+    }
+
+    public static bool IsWindowsTaskbarLight()
+    {
+        try
+        {
+            using var key = Microsoft.Win32.Registry.CurrentUser.OpenSubKey(@"Software\Microsoft\Windows\CurrentVersion\Themes\Personalize");
+            var val = key?.GetValue("SystemUsesLightTheme");
+            if (val is int i) return i == 1;
+        }
+        catch { }
+        return false;
     }
 
     public void ApplyLanguage(string lang)
@@ -1123,7 +1164,7 @@ public partial class TaskbarWidgetWindow : Window
         MenuShowSeconds.Header = isAr ? "⏱️ إظهار الثواني" : "⏱️ Show Seconds";
         MenuSettings.Header = isAr ? "⚙️ الإعدادات…" : "⚙️ Settings…";
         MenuHide.Header = isAr ? "👁 إخفاء ودجت شريط المهام" : "👁 Hide Taskbar Widget";
-        MenuCloseApp.Header = isAr ? "🚪 إغلاق التطبيق" : "🚪 Close Application";
+        MenuCloseApp.Header = isAr ? "⏻️ إغلاق التطبيق" : "⏻️ Close Application";
 
         SyncSettingsToggles();
     }

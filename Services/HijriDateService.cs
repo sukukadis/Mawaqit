@@ -26,13 +26,14 @@ public static class HijriDateService
         }
     }
 
-    public static string FormatHijriDate(DateTime date, string lang)
+    public static string FormatHijriDate(DateTime date, string lang, int offsetDays = 0)
     {
         try
         {
-            int hy = HijriCal.GetYear(date);
-            int hm = HijriCal.GetMonth(date);
-            int hd = HijriCal.GetDayOfMonth(date);
+            DateTime adjustedDate = offsetDays != 0 ? date.AddDays(offsetDays) : date;
+            int hy = HijriCal.GetYear(adjustedDate);
+            int hm = HijriCal.GetMonth(adjustedDate);
+            int hd = HijriCal.GetDayOfMonth(adjustedDate);
 
             if (hm >= 1 && hm <= 12)
             {

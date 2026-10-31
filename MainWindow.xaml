@@ -127,13 +127,13 @@
             <TabItem x:Name="TabPrayerTimes" Header="🕰️ مواقيت الصلاة" Style="{StaticResource ModernTabItem}">
                 <Grid Margin="6,10,6,6">
                     <Grid.RowDefinitions>
-                        <!-- Next Prayer Banner -->
+                        <!-- Row 0: Next Prayer Banner -->
                         <RowDefinition Height="Auto"/>
-                        <!-- Location & Refresh Row -->
+                        <!-- Row 1: Location & Refresh Row -->
                         <RowDefinition Height="Auto"/>
-                        <!-- Prayer Cards List -->
+                        <!-- Row 2: Prayer Cards List -->
                         <RowDefinition Height="*"/>
-                        <!-- Time Tuning Card -->
+                        <!-- Row 3: Time Tuning Card -->
                         <RowDefinition Height="Auto"/>
                     </Grid.RowDefinitions>
 
@@ -148,15 +148,17 @@
                                    TextAlignment="Center"/>
                     </Border>
 
-                    <!-- Current Location & Refresh -->
+                    <!-- Current Location, Refresh & Friday Pill -->
                     <Grid Grid.Row="1" Margin="0,0,0,10">
                         <Button x:Name="BtnRefresh" Content="🔄 تحديث"
                                 Style="{StaticResource RoundedButtonStyle}"
                                 HorizontalAlignment="Left" Click="BtnRefresh_Click"/>
 
-                        <TextBlock x:Name="TxtCurrentLocRow" Text="الموقع الحالي: الجزائر"
-                                   FontSize="12" FontWeight="SemiBold"
-                                   HorizontalAlignment="Right" VerticalAlignment="Center"/>
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center">
+                            <TextBlock x:Name="TxtCurrentLocRow" Text="الموقع الحالي: الجزائر"
+                                       FontSize="12" FontWeight="SemiBold"
+                                       VerticalAlignment="Center"/>
+                        </StackPanel>
                     </Grid>
 
                     <!-- Prayer Cards -->
@@ -198,31 +200,31 @@
                                        FontSize="11" FontWeight="Bold"
                                        HorizontalAlignment="Right" Margin="0,0,0,8"/>
 
-                            <UniformGrid x:Name="GridTuneInputs" Columns="5" Margin="0,0,0,10">
-                                <!-- Isha -->
+                                                        <UniformGrid x:Name="GridTuneInputs" Columns="5" Margin="0,0,0,10">
+                                <!-- Fajr -->
                                 <StackPanel Margin="2,0" HorizontalAlignment="Center">
-                                    <TextBlock x:Name="LblTuneIsha" Text="العشاء" FontSize="10" FontWeight="SemiBold" HorizontalAlignment="Center"/>
-                                    <TextBox x:Name="TxtTuneIsha" Text="0" Width="48" Height="28" TextAlignment="Center" VerticalContentAlignment="Center" Margin="0,4,0,0"/>
-                                </StackPanel>
-                                <!-- Maghrib -->
-                                <StackPanel Margin="2,0" HorizontalAlignment="Center">
-                                    <TextBlock x:Name="LblTuneMaghrib" Text="المغرب" FontSize="10" FontWeight="SemiBold" HorizontalAlignment="Center"/>
-                                    <TextBox x:Name="TxtTuneMaghrib" Text="0" Width="48" Height="28" TextAlignment="Center" VerticalContentAlignment="Center" Margin="0,4,0,0"/>
-                                </StackPanel>
-                                <!-- Asr -->
-                                <StackPanel Margin="2,0" HorizontalAlignment="Center">
-                                    <TextBlock x:Name="LblTuneAsr" Text="العصر" FontSize="10" FontWeight="SemiBold" HorizontalAlignment="Center"/>
-                                    <TextBox x:Name="TxtTuneAsr" Text="0" Width="48" Height="28" TextAlignment="Center" VerticalContentAlignment="Center" Margin="0,4,0,0"/>
+                                    <TextBlock x:Name="LblTuneFajr" Text="الفجر" FontSize="10" FontWeight="SemiBold" HorizontalAlignment="Center"/>
+                                    <TextBox x:Name="TxtTuneFajr" Text="0" Width="48" Height="28" FlowDirection="LeftToRight" TextAlignment="Center" VerticalContentAlignment="Center" Margin="0,4,0,0" LostFocus="TxtTune_LostFocus"/>
                                 </StackPanel>
                                 <!-- Dhuhr -->
                                 <StackPanel Margin="2,0" HorizontalAlignment="Center">
                                     <TextBlock x:Name="LblTuneDhuhr" Text="الظهر" FontSize="10" FontWeight="SemiBold" HorizontalAlignment="Center"/>
-                                    <TextBox x:Name="TxtTuneDhuhr" Text="0" Width="48" Height="28" TextAlignment="Center" VerticalContentAlignment="Center" Margin="0,4,0,0"/>
+                                    <TextBox x:Name="TxtTuneDhuhr" Text="0" Width="48" Height="28" FlowDirection="LeftToRight" TextAlignment="Center" VerticalContentAlignment="Center" Margin="0,4,0,0" LostFocus="TxtTune_LostFocus"/>
                                 </StackPanel>
-                                <!-- Fajr -->
+                                <!-- Asr -->
                                 <StackPanel Margin="2,0" HorizontalAlignment="Center">
-                                    <TextBlock x:Name="LblTuneFajr" Text="الفجر" FontSize="10" FontWeight="SemiBold" HorizontalAlignment="Center"/>
-                                    <TextBox x:Name="TxtTuneFajr" Text="0" Width="48" Height="28" TextAlignment="Center" VerticalContentAlignment="Center" Margin="0,4,0,0"/>
+                                    <TextBlock x:Name="LblTuneAsr" Text="العصر" FontSize="10" FontWeight="SemiBold" HorizontalAlignment="Center"/>
+                                    <TextBox x:Name="TxtTuneAsr" Text="0" Width="48" Height="28" FlowDirection="LeftToRight" TextAlignment="Center" VerticalContentAlignment="Center" Margin="0,4,0,0" LostFocus="TxtTune_LostFocus"/>
+                                </StackPanel>
+                                <!-- Maghrib -->
+                                <StackPanel Margin="2,0" HorizontalAlignment="Center">
+                                    <TextBlock x:Name="LblTuneMaghrib" Text="المغرب" FontSize="10" FontWeight="SemiBold" HorizontalAlignment="Center"/>
+                                    <TextBox x:Name="TxtTuneMaghrib" Text="0" Width="48" Height="28" FlowDirection="LeftToRight" TextAlignment="Center" VerticalContentAlignment="Center" Margin="0,4,0,0" LostFocus="TxtTune_LostFocus"/>
+                                </StackPanel>
+                                <!-- Isha -->
+                                <StackPanel Margin="2,0" HorizontalAlignment="Center">
+                                    <TextBlock x:Name="LblTuneIsha" Text="العشاء" FontSize="10" FontWeight="SemiBold" HorizontalAlignment="Center"/>
+                                    <TextBox x:Name="TxtTuneIsha" Text="0" Width="48" Height="28" FlowDirection="LeftToRight" TextAlignment="Center" VerticalContentAlignment="Center" Margin="0,4,0,0" LostFocus="TxtTune_LostFocus"/>
                                 </StackPanel>
                             </UniformGrid>
 
@@ -295,30 +297,40 @@
                                 </Grid>
 
                                 <!-- Calculation Method Selector -->
-                                <Grid Margin="0,0,0,2">
+                                <Grid Margin="0,0,0,8">
                                     <TextBlock x:Name="LblCalcMethod" Text="طريقة الحساب:" FontSize="12" FontWeight="SemiBold"
                                                VerticalAlignment="Center" HorizontalAlignment="Left"/>
                                     <ComboBox x:Name="CmbCalcMethod" Width="270" Height="30"
                                               HorizontalAlignment="Right"
                                               SelectionChanged="CmbCalcMethod_SelectionChanged"/>
                                 </Grid>
+
+                                <!-- Hijri Date Offset (Moon sighting) -->
+                                <Grid Margin="0,0,0,2">
+                                    <TextBlock x:Name="LblHijriOffset" Text="تعديل التاريخ الهجري (رؤية الهلال):" FontSize="12" FontWeight="SemiBold"
+                                               VerticalAlignment="Center" HorizontalAlignment="Left"/>
+                                    <ComboBox x:Name="CmbHijriOffset" Width="270" Height="30"
+                                              HorizontalAlignment="Right"
+                                              SelectionChanged="CmbHijriOffset_SelectionChanged"/>
+                                </Grid>
                             </StackPanel>
                         </Border>
 
                         <!-- SECTION: ADHAN -->
-                        <TextBlock x:Name="SecAdhanTitle" Text="🔊 الأذان" FontSize="13" FontWeight="Bold" Margin="4,6,4,4"/>
+                        <TextBlock x:Name="SecAdhanTitle" Text="🔊 الأذان والتخصيص الصوتي" FontSize="13" FontWeight="Bold" Margin="4,6,4,4"/>
                         <Border x:Name="CardAdhan" CornerRadius="8" BorderThickness="1" Margin="0,0,0,10">
                             <StackPanel Margin="14,10">
                                 <CheckBox x:Name="ChkAdhanEnable" Content="تشغيل الأذان وقت الصلاة"
                                           FontSize="12" FontWeight="SemiBold"
                                           Checked="ChkAdhanEnable_Changed" Unchecked="ChkAdhanEnable_Changed"/>
 
-                                <Grid Margin="0,8,0,0">
+                                <!-- Default Adhan File -->
+                                <Grid Margin="0,8,0,8">
                                     <TextBlock x:Name="TxtAdhanFile" Text="adhan.mp3" FontSize="11"
-                                               VerticalAlignment="Center" HorizontalAlignment="Left" TextTrimming="CharacterEllipsis" MaxWidth="320"/>
+                                               VerticalAlignment="Center" HorizontalAlignment="Left" TextTrimming="CharacterEllipsis" MaxWidth="300"/>
 
                                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
-                                        <Button x:Name="BtnPickAdhan" Content="📂 اختيار ملف MP3"
+                                        <Button x:Name="BtnPickAdhan" Content="📂 اختيار MP3"
                                                 Style="{StaticResource RoundedButtonStyle}"
                                                 Click="BtnPickAdhan_Click" Margin="0,0,6,0"/>
                                         <Button x:Name="BtnTestAdhan" Content="▶ تجربة"
@@ -326,6 +338,23 @@
                                                 Click="BtnTestAdhan_Click"/>
                                     </StackPanel>
                                 </Grid>
+
+                                <!-- Per-Prayer Enablement -->
+                                <TextBlock x:Name="LblAdhanPrayers" Text="الصلوات المفعل لها الأذان:" FontSize="11" FontWeight="SemiBold" Margin="0,4,0,4"/>
+                                <WrapPanel Margin="0,0,0,8">
+                                    <CheckBox x:Name="ChkAdhanFajr" IsChecked="True" Content="الفجر" Margin="0,0,14,4" Checked="ChkPrayerAdhan_Changed" Unchecked="ChkPrayerAdhan_Changed"/>
+                                    <CheckBox x:Name="ChkAdhanDhuhr" IsChecked="True" Content="الظهر" Margin="0,0,14,4" Checked="ChkPrayerAdhan_Changed" Unchecked="ChkPrayerAdhan_Changed"/>
+                                    <CheckBox x:Name="ChkAdhanAsr" IsChecked="True" Content="العصر" Margin="0,0,14,4" Checked="ChkPrayerAdhan_Changed" Unchecked="ChkPrayerAdhan_Changed"/>
+                                    <CheckBox x:Name="ChkAdhanMaghrib" IsChecked="True" Content="المغرب" Margin="0,0,14,4" Checked="ChkPrayerAdhan_Changed" Unchecked="ChkPrayerAdhan_Changed"/>
+                                    <CheckBox x:Name="ChkAdhanIsha" IsChecked="True" Content="العشاء" Margin="0,0,14,4" Checked="ChkPrayerAdhan_Changed" Unchecked="ChkPrayerAdhan_Changed"/>
+                                </WrapPanel>
+
+
+
+                                <!-- Audio Fade-in -->
+                                <CheckBox x:Name="ChkAudioFadeIn" Content="تدرج مستوى الصوت عند بدء الأذان (Fade-in صوت هادئ في البداية)"
+                                          FontSize="11.5" Margin="0,4,0,2"
+                                          Checked="ChkAudioFadeIn_Changed" Unchecked="ChkAudioFadeIn_Changed"/>
                             </StackPanel>
                         </Border>
 
@@ -340,7 +369,7 @@
                                 <Grid Margin="0,8,0,0">
                                     <TextBlock x:Name="LblMinutesBefore" Text="دقائق قبل الأذان:" FontSize="12" FontWeight="SemiBold"
                                                VerticalAlignment="Center" HorizontalAlignment="Left"/>
-                                    <TextBox x:Name="TxtReminderMinutes" Width="60" Height="26"
+                                    <TextBox x:Name="TxtReminderMinutes" Width="60" Height="26" FlowDirection="LeftToRight"
                                              Text="10" TextAlignment="Center" VerticalContentAlignment="Center"
                                              HorizontalAlignment="Right" LostFocus="TxtReminderMinutes_LostFocus"/>
                                 </Grid>
@@ -361,7 +390,7 @@
                             </StackPanel>
                         </Border>
 
-                        <!-- SECTION: NOTIFICATIONS -->
+                        <!-- SECTION: NOTIFICATIONS & FRIDAY -->
                         <TextBlock x:Name="SecNotificationsTitle" Text="🔔 الإشعارات" FontSize="13" FontWeight="Bold" Margin="4,6,4,4"/>
                         <Border x:Name="CardNotifications" CornerRadius="8" BorderThickness="1" Margin="0,0,0,10">
                             <StackPanel Margin="14,10">
@@ -369,7 +398,7 @@
                                           FontSize="12" FontWeight="SemiBold" Margin="0,0,0,6"
                                           Checked="ChkAdhanPopup_Changed" Unchecked="ChkAdhanPopup_Changed"/>
                                 <CheckBox x:Name="ChkReminderPopup" Content="إشعار التذكير قبل الأذان"
-                                          FontSize="12" FontWeight="SemiBold"
+                                          FontSize="12" FontWeight="SemiBold" Margin="0,0,0,6"
                                           Checked="ChkReminderPopup_Changed" Unchecked="ChkReminderPopup_Changed"/>
                             </StackPanel>
                         </Border>
@@ -405,6 +434,7 @@
                         <TextBlock x:Name="SecThemeTitle" Text="🎨 المظهر" FontSize="13" FontWeight="Bold" Margin="4,6,4,4"/>
                         <Border x:Name="CardTheme" CornerRadius="8" BorderThickness="1" Margin="0,0,0,10">
                             <StackPanel Margin="14,10">
+                                <RadioButton x:Name="RbThemeSystem" IsChecked="True" Content="🤖 تلقائي" FontSize="12" FontWeight="SemiBold" Margin="0,0,0,6" Checked="RbTheme_Checked"/>
                                 <RadioButton x:Name="RbThemeDark" Content="🌙 داكن" FontSize="12" FontWeight="SemiBold" Margin="0,0,0,6"
                                              Checked="RbTheme_Checked"/>
                                 <RadioButton x:Name="RbThemeLight" Content="☀️ فاتح" FontSize="12" FontWeight="SemiBold"
@@ -420,6 +450,17 @@
                                           FontSize="12" FontWeight="SemiBold"
                                           Checked="ChkStartup_Changed" Unchecked="ChkStartup_Changed"/>
                             </StackPanel>
+                        </Border>
+
+                        <!-- SECTION: UPDATES -->
+                        <TextBlock x:Name="SecUpdatesTitle" Text="🔄 التحديثات" FontSize="13" FontWeight="Bold" Margin="4,6,4,4"/>
+                        <Border x:Name="CardUpdates" CornerRadius="8" BorderThickness="1" Margin="0,0,0,10">
+                            <Grid Margin="14,10">
+                                <TextBlock Text="الإصدار الحالي: v2.2.6" x:Name="TxtAppVersionSettings" FontSize="12" FontWeight="SemiBold" VerticalAlignment="Center" HorizontalAlignment="Left"/>
+                                <Button x:Name="BtnCheckUpdates" Content="🔄 التحقق من وجود تحديثات"
+                                        Style="{StaticResource RoundedButtonStyle}"
+                                        HorizontalAlignment="Right" Click="BtnCheckUpdates_Click"/>
+                            </Grid>
                         </Border>
 
 

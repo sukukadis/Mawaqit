@@ -94,7 +94,7 @@ public static class WeatherService
     static WeatherService()
     {
         Http = new HttpClient { Timeout = TimeSpan.FromSeconds(12) };
-        Http.DefaultRequestHeaders.Add("User-Agent", "Mawaqit/2.2.5 (Windows NT 10.0; Win64; x64) PrayerApp");
+        Http.DefaultRequestHeaders.Add("User-Agent", "Mawaqit/2.2.6 (Windows NT 10.0; Win64; x64) PrayerApp");
         Http.DefaultRequestHeaders.Add("Accept", "application/json");
     }
 

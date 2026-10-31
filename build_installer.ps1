@@ -52,7 +52,7 @@ if (Test-Path $desktopLogo) {
 
 # Detect current version from MawaqitSetup.iss
 $issContent = Get-Content "$ScriptDir\MawaqitSetup.iss" -Raw
-$appVersion = "2.2.5"
+$appVersion = "2.2.6"
 if ($issContent -match '#define MyAppVersion "([^"]+)"') {
     $appVersion = $matches[1]
 }

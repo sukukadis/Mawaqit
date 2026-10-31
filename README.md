@@ -10,13 +10,13 @@
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/Version-v2.2.5-blue?logo=github" alt="Version: v2.2.5" />
+  <img src="https://img.shields.io/badge/Version-v2.2.6-blue?logo=github" alt="Version: v2.2.6" />
   <img src="https://img.shields.io/badge/Platform-Windows%2010%20%2F%2011-0078D4?logo=windows" alt="Platform: Windows" />
   <img src="https://img.shields.io/badge/Framework-.NET%208%20WPF-512BD4?logo=dotnet" alt="Framework: .NET 8 WPF" />
   <img src="https://img.shields.io/badge/Language-C%23%2012-239120?logo=csharp" alt="Language: C#" />
   <img src="https://img.shields.io/badge/Coverage-Worldwide%20(100%2B%20Countries)-10B981" alt="Coverage: Worldwide" />
   <img src="https://img.shields.io/badge/Locations-720%2B%20States%20%26%20Cities-0284C7" alt="Locations: 720+ States" />
-<a href="https://github.com/sukukadis/Mawaqit/releases/download/Mawaqit/Mawaqit-2.2.5-Standalone-Setup.exe">
+<a href="https://github.com/sukukadis/Mawaqit/releases/download/Mawaqit/Mawaqit-2.2.6-Standalone-Setup.exe">
   <img src="https://img.shields.io/badge/Download-Standalone%20Setup-D97706?logo=windows&logoColor=white" alt="Download Mawaqit" />
 </a>
 </p>
@@ -208,5 +208,5 @@ You can build the installer with one command or double-click:
    ```
 
 The compiled installers are saved in:
-- `installer_output\Mawaqit-2.2.5-Setup.exe` (Standard)
-- `installer_output\Mawaqit-2.2.5-Standalone-Setup.exe` (Standalone)
+- `installer_output\Mawaqit-2.2.6-Setup.exe` (Standard)
+- `installer_output\Mawaqit-2.2.6-Standalone-Setup.exe` (Standalone)

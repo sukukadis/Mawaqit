@@ -33,13 +33,48 @@ public class AppConfig
     public string Language { get; set; } = "ar";
 
     [JsonPropertyName("adhan_enabled")]
-    public bool AdhanEnabled { get; set; } = true;
+    public bool AdhanEnabled { get; set; } = false;
 
     [JsonPropertyName("adhan_file")]
     public string AdhanFile { get; set; } = "";
 
+    [JsonIgnore]
+    public bool UseDedicatedFajrAdhan { get; set; } = false;
+
+    [JsonIgnore]
+    public string FajrAdhanFile { get; set; } = "";
+
+    [JsonPropertyName("prayer_adhan_enabled")]
+    public Dictionary<string, bool> PrayerAdhanEnabled { get; set; } = new(StringComparer.OrdinalIgnoreCase)
+    {
+        ["Fajr"] = true,
+        ["Dhuhr"] = true,
+        ["Asr"] = true,
+        ["Maghrib"] = true,
+        ["Isha"] = true
+    };
+
+    [JsonPropertyName("prayer_reminder_enabled")]
+    public Dictionary<string, bool> PrayerReminderEnabled { get; set; } = new(StringComparer.OrdinalIgnoreCase)
+    {
+        ["Fajr"] = true,
+        ["Dhuhr"] = true,
+        ["Asr"] = true,
+        ["Maghrib"] = true,
+        ["Isha"] = true
+    };
+
+    [JsonPropertyName("audio_fade_in")]
+    public bool AudioFadeIn { get; set; } = true;
+
+    [JsonPropertyName("hijri_offset_days")]
+    public int HijriOffsetDays { get; set; } = 0;
+
+    [JsonIgnore]
+    public bool FridayReminderEnabled { get; set; } = false;
+
     [JsonPropertyName("reminder_enabled")]
-    public bool ReminderEnabled { get; set; } = true;
+    public bool ReminderEnabled { get; set; } = false;
 
     [JsonPropertyName("reminder_file")]
     public string ReminderFile { get; set; } = "";
@@ -51,7 +86,7 @@ public class AppConfig
     public bool StartWithWindows { get; set; } = true;
 
     [JsonPropertyName("theme_mode")]
-    public string ThemeMode { get; set; } = "dark";
+    public string ThemeMode { get; set; } = "system";
 
     [JsonPropertyName("muted")]
     public bool Muted { get; set; } = false;
@@ -117,6 +152,8 @@ public class AppConfig
                 if (config != null)
                 {
                     config.TuneByWilaya ??= new();
+                    config.PrayerAdhanEnabled ??= new(StringComparer.OrdinalIgnoreCase);
+                    config.PrayerReminderEnabled ??= new(StringComparer.OrdinalIgnoreCase);
                     config.EnsureCoordinates();
                     return config;
                 }
@@ -181,6 +218,18 @@ public class AppConfig
             Services.Logger.LogError($"Failed to save config: {ex.Message}");
         }
     }
+
+    public bool IsPrayerSpecificAdhanEnabled(string prayer) =>
+        !PrayerAdhanEnabled.TryGetValue(prayer, out bool v) || v;
+
+    public bool IsAdhanEnabledFor(string prayer) =>
+        AdhanEnabled && IsPrayerSpecificAdhanEnabled(prayer);
+
+    private bool _legacyIsAdhan(string prayer) =>
+        AdhanEnabled && (!PrayerAdhanEnabled.TryGetValue(prayer, out bool v) || v);
+
+    public bool IsReminderEnabledFor(string prayer) =>
+        ReminderEnabled && (!PrayerReminderEnabled.TryGetValue(prayer, out bool v) || v);
 
     public int GetTune(string wilaya, string prayerKey)
     {

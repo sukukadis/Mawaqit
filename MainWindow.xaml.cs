@@ -206,12 +206,26 @@ public partial class MainWindow : Window
 
     public MainWindow(bool startHidden = false)
     {
+        _config = AppConfig.Load();
+        _isDark = DetermineIsDark();
+        _theme = _isDark ? ThemePalette.Dark : ThemePalette.Light;
+
         InitializeComponent();
         LoadAppLogo();
-
-        _config = AppConfig.Load();
-        _isDark = _config.ThemeMode == "dark";
-        _theme = _isDark ? ThemePalette.Dark : ThemePalette.Light;
+        try
+        {
+            Microsoft.Win32.SystemEvents.UserPreferenceChanged += (s, e) =>
+            {
+                Dispatcher.Invoke(() =>
+                {
+                    if (_config.ThemeMode == "system")
+                    {
+                        ApplyTheme();
+                    }
+                });
+            };
+        }
+        catch { }
 
         // Resolve Audio files
         _config.AdhanFile = AudioService.ResolveAudioFile(_config.AdhanFile, "adhan.mp3");
@@ -243,6 +257,7 @@ public partial class MainWindow : Window
 
         // Taskbar Widget (Awqat Salaat WinUI style taskbar tile button)
         _taskbarWidget = EnsureTaskbarWidget();
+        _trayService.CheckUpdatesRequested += () => Dispatcher.Invoke(() => _ = CheckForUpdatesAsync());
 
         _trayService.TaskbarWidgetToggled += (enabled) =>
         {
@@ -443,9 +458,28 @@ public partial class MainWindow : Window
 
     #region Theming & Localization
 
+    private bool DetermineIsDark()
+    {
+        if (_config.ThemeMode == "light") return false;
+        if (_config.ThemeMode == "dark") return true;
+        return IsWindowsDarkTheme();
+    }
+
+    public static bool IsWindowsDarkTheme()
+    {
+        try
+        {
+            using var key = Microsoft.Win32.Registry.CurrentUser.OpenSubKey(@"Software\Microsoft\Windows\CurrentVersion\Themes\Personalize");
+            var val = key?.GetValue("AppsUseLightTheme");
+            if (val is int i) return i == 0;
+        }
+        catch { }
+        return true;
+    }
+
     private void ApplyTheme()
     {
-        _isDark = _config.ThemeMode == "dark";
+        _isDark = DetermineIsDark();
         _theme = _isDark ? ThemePalette.Dark : ThemePalette.Light;
 
         Background = _theme.Background;
@@ -498,7 +532,7 @@ public partial class MainWindow : Window
             title.Foreground = _theme.Accent;
         }
 
-        foreach (var card in new[] { CardLocation, CardAdhan, CardReminder, CardNotifications, CardTaskbarWidget, CardLanguage, CardTheme, CardStartup })
+        foreach (var card in new[] { CardLocation, CardAdhan, CardReminder, CardNotifications, CardTaskbarWidget, CardLanguage, CardTheme, CardStartup, CardUpdates })
         {
             card.Background = _theme.Card;
             card.BorderBrush = _theme.Border;
@@ -516,7 +550,7 @@ public partial class MainWindow : Window
         TxtReminderMinutes.Foreground = _theme.Text;
         TxtReminderMinutes.BorderBrush = _theme.Border;
 
-        foreach (var chk in new[] { ChkAdhanEnable, ChkReminderEnable, ChkAdhanPopup, ChkReminderPopup, ChkTaskbarWidgetEnable, ChkTaskbarWidgetShowSeconds, ChkStartup })
+        foreach (var chk in new[] { ChkAdhanEnable, ChkReminderEnable, ChkAdhanPopup, ChkReminderPopup, ChkTaskbarWidgetEnable, ChkTaskbarWidgetShowSeconds, ChkStartup, ChkAudioFadeIn, ChkAdhanFajr, ChkAdhanDhuhr, ChkAdhanAsr, ChkAdhanMaghrib, ChkAdhanIsha })
         {
             chk.Foreground = _theme.Text;
         }
@@ -527,13 +561,20 @@ public partial class MainWindow : Window
         _taskbarWidget?.ApplyTheme(_theme, _isDark);
         _flyoutWindow?.ApplyTheme(_theme, _isDark);
 
-        foreach (var rb in new[] { RbLangAr, RbLangEn, RbThemeDark, RbThemeLight })
+        foreach (var rb in new[] { RbLangAr, RbLangEn, RbThemeSystem, RbThemeDark, RbThemeLight })
         {
             rb.Foreground = _theme.Text;
         }
 
         TxtAdhanFile.Foreground = string.IsNullOrEmpty(_config.AdhanFile) ? Brushes.Red : _theme.TextMuted;
         TxtReminderFile.Foreground = string.IsNullOrEmpty(_config.ReminderFile) ? Brushes.Red : _theme.TextMuted;
+
+                BtnCheckUpdates.Background = _theme.Btn2Bg;
+        BtnCheckUpdates.Foreground = _theme.Btn2Fg;
+        LblHijriOffset.Foreground = _theme.Text;
+        LblAdhanPrayers.Foreground = _theme.TextMuted;
+        SecUpdatesTitle.Foreground = _theme.Text;
+        TxtAppVersionSettings.Foreground = _theme.TextMuted;
 
         foreach (var btn in new[] { BtnPickAdhan, BtnTestAdhan, BtnPickReminder, BtnTestReminder })
         {
@@ -604,8 +645,16 @@ public partial class MainWindow : Window
         RbLangEn.Content = LocalizationService.Get("lang_english", lang);
 
         SecThemeTitle.Text = LocalizationService.Get("sec_theme", lang);
-        RbThemeLight.Content = LocalizationService.Get("theme_light", lang);
-        RbThemeDark.Content = LocalizationService.Get("theme_dark", lang);
+        RbThemeSystem.Content = isAr ? "🤖 تلقائي" : "🤖 Auto";
+        RbThemeDark.Content = isAr ? "🌙 داكن" : "🌙 Dark";
+        RbThemeLight.Content = isAr ? "☀️ فاتح" : "☀️ Light";
+        LblHijriOffset.Text = isAr ? "تعديل التاريخ الهجري (رؤية الهلال):" : "Hijri Date Offset (Moon Sighting):";
+        ChkAudioFadeIn.Content = isAr ? "تدرج مستوى الصوت عند بدء الأذان (Fade-in صوت هادئ في البداية)" : "Audio Fade-in (Gentle volume ramp-up on Adhan)";
+        LblAdhanPrayers.Text = isAr ? "الصلوات المفعل لها الأذان:" : "Prayers with Adhan Enabled:";
+        SecUpdatesTitle.Text = isAr ? "🔄 التحديثات" : "🔄 Updates";
+        BtnCheckUpdates.Content = isAr ? "🔄 التحقق من وجود تحديثات" : "🔄 Check for Updates";
+        TxtAppVersionSettings.Text = $"{(_config.Language == "ar" ? "الإصدار الحالي: " : "Current Version: ")}v{UpdateService.GetCurrentVersion()}";
+        PopulateHijriOffsetOptions();
 
         SecStartupTitle.Text = LocalizationService.Get("sec_startup", lang);
         ChkStartup.Content = LocalizationService.Get("startup_enable", lang);
@@ -621,8 +670,10 @@ public partial class MainWindow : Window
         var now = DateTime.Now;
         string lang = _config.Language;
         TxtGregorianDate.Text = HijriDateService.FormatGregorianDate(now, lang);
-        TxtHijriDate.Text = HijriDateService.FormatHijriDate(now, lang);
+        TxtHijriDate.Text = HijriDateService.FormatHijriDate(now, lang, _config.HijriOffsetDays);
     }
+
+    
 
     private void UpdateLocationLabels()
     {
@@ -773,8 +824,20 @@ public partial class MainWindow : Window
         RbLangAr.IsChecked = _config.Language == "ar";
         RbLangEn.IsChecked = _config.Language == "en";
 
+        RbThemeSystem.IsChecked = _config.ThemeMode == "system" || string.IsNullOrEmpty(_config.ThemeMode);
         RbThemeDark.IsChecked = _config.ThemeMode == "dark";
         RbThemeLight.IsChecked = _config.ThemeMode == "light";
+
+        ChkAudioFadeIn.IsChecked = _config.AudioFadeIn;
+
+        ChkAdhanFajr.IsChecked = _config.IsPrayerSpecificAdhanEnabled("Fajr");
+        ChkAdhanDhuhr.IsChecked = _config.IsPrayerSpecificAdhanEnabled("Dhuhr");
+        ChkAdhanAsr.IsChecked = _config.IsPrayerSpecificAdhanEnabled("Asr");
+        ChkAdhanMaghrib.IsChecked = _config.IsPrayerSpecificAdhanEnabled("Maghrib");
+        ChkAdhanIsha.IsChecked = _config.IsPrayerSpecificAdhanEnabled("Isha");
+
+        TxtAppVersionSettings.Text = $"{(_config.Language == "ar" ? "الإصدار الحالي: " : "Current Version: ")}v{UpdateService.GetCurrentVersion()}";
+        PopulateHijriOffsetOptions();
 
         ChkStartup.IsChecked = _config.StartWithWindows;
         PopulateCalculationMethods();
@@ -1115,6 +1178,8 @@ public partial class MainWindow : Window
                 _adhanMsgShown.Remove(key);
             }
 
+            if (!_config.IsAdhanEnabledFor(name)) continue;
+
             if (secSince >= 0 && secSince <= 60 && !_adhanPlayed.Contains(key))
             {
                 if (!adhanOn)
@@ -1123,20 +1188,27 @@ public partial class MainWindow : Window
                     continue;
                 }
 
-                if (string.IsNullOrEmpty(adhanFile) || !File.Exists(adhanFile))
+                string fileToPlay = adhanFile;
+
+                if (string.IsNullOrEmpty(fileToPlay) || !File.Exists(fileToPlay))
                 {
                     if (!_adhanMsgShown.Contains(key))
                     {
                         _adhanMsgShown.Add(key);
-                        MessageBox.Show(
-                            "Adhan is enabled but MP3 file is missing.\nPlease choose an MP3 file in Settings.",
-                            LocalizationService.Get("audio_missing_title", _config.Language),
-                            MessageBoxButton.OK, MessageBoxImage.Warning);
+                        Logger.LogError($"Adhan audio file missing for {name}: {fileToPlay}");
+                        if (_config.AdhanPopupEnabled && !FullscreenHelper.IsExclusiveFullscreenRunning())
+                        {
+                            var toast = new ToastNotificationWindow(
+                                LocalizationService.Get("audio_missing_title", _config.Language),
+                                "Adhan audio file is missing. Please select an MP3 file in Settings.",
+                                _theme, _isDark, _audioService, false);
+                            toast.Show();
+                        }
                     }
                     continue;
                 }
 
-                bool played = _audioService.Play(adhanFile, _config.Volume, _config.Muted, false);
+                bool played = _audioService.Play(fileToPlay, _config.Volume, _config.Muted, false, fadeIn: _config.AudioFadeIn);
                 if (played)
                 {
                     _adhanPlayed.Add(key);
@@ -1214,17 +1286,64 @@ public partial class MainWindow : Window
         _ = FetchWeatherAsync();
     }
 
+    private int ParseTune(TextBox txt)
+    {
+        string s = txt.Text.Trim();
+        if (string.IsNullOrEmpty(s)) return 0;
+
+        char[] chars = s.ToCharArray();
+        for (int i = 0; i < chars.Length; i++)
+        {
+            if (chars[i] >= '٠' && chars[i] <= '٩')
+                chars[i] = (char)('0' + (chars[i] - '٠'));
+            else if (chars[i] >= '۰' && chars[i] <= '۹')
+                chars[i] = (char)('0' + (chars[i] - '۰'));
+        }
+        s = new string(chars);
+
+        s = s.Replace('−', '-').Replace('–', '-').Replace('—', '-').Replace('‐', '-').Replace('﹣', '-').Replace('－', '-');
+
+        bool isNegative = s.StartsWith("-") || s.EndsWith("-");
+        s = s.Replace("-", "").Replace("+", "").Trim();
+
+        if (int.TryParse(s, System.Globalization.NumberStyles.Integer, System.Globalization.CultureInfo.InvariantCulture, out int v))
+        {
+            if (isNegative) v = -v;
+            return Math.Clamp(v, -60, 60);
+        }
+        return 0;
+    }
+
+    private void TxtTune_LostFocus(object sender, RoutedEventArgs e)
+    {
+        if (sender is TextBox tb)
+        {
+            int val = ParseTune(tb);
+            tb.Text = val.ToString();
+        }
+    }
+
     private void BtnApplyTune_Click(object sender, RoutedEventArgs e)
     {
         string wilaya = _config.Language == "ar" ? _config.WilayaAr : _config.WilayaEn;
 
-        int ParseTune(TextBox txt) => int.TryParse(txt.Text.Trim(), out int v) ? Math.Clamp(v, -60, 60) : 0;
+        int f = ParseTune(TxtTuneFajr);
+        int d = ParseTune(TxtTuneDhuhr);
+        int a = ParseTune(TxtTuneAsr);
+        int m = ParseTune(TxtTuneMaghrib);
+        int ish = ParseTune(TxtTuneIsha);
 
-        _config.SetTune(wilaya, "fajr", ParseTune(TxtTuneFajr));
-        _config.SetTune(wilaya, "dhuhr", ParseTune(TxtTuneDhuhr));
-        _config.SetTune(wilaya, "asr", ParseTune(TxtTuneAsr));
-        _config.SetTune(wilaya, "maghrib", ParseTune(TxtTuneMaghrib));
-        _config.SetTune(wilaya, "isha", ParseTune(TxtTuneIsha));
+        _config.SetTune(wilaya, "fajr", f);
+        _config.SetTune(wilaya, "dhuhr", d);
+        _config.SetTune(wilaya, "asr", a);
+        _config.SetTune(wilaya, "maghrib", m);
+        _config.SetTune(wilaya, "isha", ish);
+
+        TxtTuneFajr.Text = f.ToString();
+        TxtTuneDhuhr.Text = d.ToString();
+        TxtTuneAsr.Text = a.ToString();
+        TxtTuneMaghrib.Text = m.ToString();
+        TxtTuneIsha.Text = ish.ToString();
 
         _config.Save();
 
@@ -1495,7 +1614,7 @@ public partial class MainWindow : Window
 
     private void ChkAdhanEnable_Changed(object sender, RoutedEventArgs e)
     {
-        _config.AdhanEnabled = ChkAdhanEnable.IsChecked == true;
+        if (!IsLoaded || _config == null) return;_config.AdhanEnabled = ChkAdhanEnable.IsChecked == true;
         _config.Save();
     }
 
@@ -1551,7 +1670,7 @@ public partial class MainWindow : Window
 
     private void ChkReminderEnable_Changed(object sender, RoutedEventArgs e)
     {
-        _config.ReminderEnabled = ChkReminderEnable.IsChecked == true;
+        if (!IsLoaded || _config == null) return;_config.ReminderEnabled = ChkReminderEnable.IsChecked == true;
         _config.Save();
     }
 
@@ -1618,20 +1737,20 @@ public partial class MainWindow : Window
 
     private void ChkAdhanPopup_Changed(object sender, RoutedEventArgs e)
     {
-        _config.AdhanPopupEnabled = ChkAdhanPopup.IsChecked == true;
+        if (!IsLoaded || _config == null) return;_config.AdhanPopupEnabled = ChkAdhanPopup.IsChecked == true;
         _config.Save();
     }
 
     private void ChkReminderPopup_Changed(object sender, RoutedEventArgs e)
     {
-        _config.ReminderPopupEnabled = ChkReminderPopup.IsChecked == true;
+        if (!IsLoaded || _config == null) return;_config.ReminderPopupEnabled = ChkReminderPopup.IsChecked == true;
         _config.Save();
     }
 
 
     private void ChkTaskbarWidgetEnable_Changed(object sender, RoutedEventArgs e)
     {
-        if (!IsLoaded) return;
+        if (!IsLoaded || _config == null) return;
         bool isChecked = ChkTaskbarWidgetEnable.IsChecked == true;
         _config.TaskbarWidgetEnabled = isChecked;
         _config.Save();
@@ -1654,7 +1773,7 @@ public partial class MainWindow : Window
 
     private void ChkTaskbarWidgetShowSeconds_Changed(object sender, RoutedEventArgs e)
     {
-        if (!IsLoaded) return;
+        if (!IsLoaded || _config == null) return;
         _config.TaskbarWidgetShowSeconds = ChkTaskbarWidgetShowSeconds.IsChecked == true;
         _config.Save();
         UpdateBanner();
@@ -1675,6 +1794,7 @@ public partial class MainWindow : Window
 
     private void RbLang_Checked(object sender, RoutedEventArgs e)
     {
+        if (!IsLoaded || _config == null) return;
         if (RbLangAr.IsChecked == true && _config.Language != "ar")
         {
             _config.Language = "ar";
@@ -1699,15 +1819,15 @@ public partial class MainWindow : Window
 
     private void RbTheme_Checked(object sender, RoutedEventArgs e)
     {
-        if (RbThemeDark.IsChecked == true && _config.ThemeMode != "dark")
+        if (!IsLoaded || _config == null) return;
+        string newMode = _config.ThemeMode;
+        if (RbThemeSystem?.IsChecked == true) newMode = "system";
+        else if (RbThemeDark?.IsChecked == true) newMode = "dark";
+        else if (RbThemeLight?.IsChecked == true) newMode = "light";
+
+        if (newMode != _config.ThemeMode)
         {
-            _config.ThemeMode = "dark";
-            _config.Save();
-            ApplyTheme();
-        }
-        else if (RbThemeLight.IsChecked == true && _config.ThemeMode != "light")
-        {
-            _config.ThemeMode = "light";
+            _config.ThemeMode = newMode;
             _config.Save();
             ApplyTheme();
         }
@@ -1715,6 +1835,7 @@ public partial class MainWindow : Window
 
     private void ChkStartup_Changed(object sender, RoutedEventArgs e)
     {
+        if (!IsLoaded || _config == null) return;
         _config.StartWithWindows = ChkStartup.IsChecked == true;
         _config.Save();
         RegistryService.SyncStartup(_config.StartWithWindows, force: true);
@@ -1889,4 +2010,119 @@ public partial class MainWindow : Window
     }
 
     #endregion
+    private void PopulateHijriOffsetOptions()
+    {
+        bool isAr = _config.Language == "ar";
+        CmbHijriOffset.Items.Clear();
+        var options = new[]
+        {
+            (-2, isAr ? "-2 أيام (-2 days)" : "-2 days"),
+            (-1, isAr ? "-1 يوم (-1 day)" : "-1 day"),
+            (0,  isAr ? "0 (افتراضي / Default)" : "0 (Default)"),
+            (1,  isAr ? "+1 يوم (+1 day)" : "+1 day"),
+            (2,  isAr ? "+2 أيام (+2 days)" : "+2 days")
+        };
+
+        int selectedIdx = 2;
+        for (int i = 0; i < options.Length; i++)
+        {
+            var item = new ComboBoxItem { Content = options[i].Item2, Tag = options[i].Item1 };
+            CmbHijriOffset.Items.Add(item);
+            if (options[i].Item1 == _config.HijriOffsetDays)
+            {
+                selectedIdx = i;
+            }
+        }
+        CmbHijriOffset.SelectedIndex = selectedIdx;
+    }
+
+    private void CmbHijriOffset_SelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+        if (CmbHijriOffset.SelectedItem is ComboBoxItem item && item.Tag is int offset)
+        {
+            if (_config.HijriOffsetDays != offset)
+            {
+                _config.HijriOffsetDays = offset;
+                _config.Save();
+                UpdateHeaderDates();
+            }
+        }
+    }
+
+    private void ChkPrayerAdhan_Changed(object sender, RoutedEventArgs e)
+    {
+        if (!IsLoaded || _config == null) return;
+        _config.PrayerAdhanEnabled["Fajr"] = ChkAdhanFajr.IsChecked == true;
+        _config.PrayerAdhanEnabled["Dhuhr"] = ChkAdhanDhuhr.IsChecked == true;
+        _config.PrayerAdhanEnabled["Asr"] = ChkAdhanAsr.IsChecked == true;
+        _config.PrayerAdhanEnabled["Maghrib"] = ChkAdhanMaghrib.IsChecked == true;
+        _config.PrayerAdhanEnabled["Isha"] = ChkAdhanIsha.IsChecked == true;
+        _config.Save();
+    }
+
+    private void ChkAudioFadeIn_Changed(object sender, RoutedEventArgs e)
+    {
+        if (!IsLoaded || _config == null) return;
+        _config.AudioFadeIn = ChkAudioFadeIn.IsChecked == true;
+        _config.Save();
+    }
+    private async void BtnCheckUpdates_Click(object sender, RoutedEventArgs e) => await CheckForUpdatesAsync();
+
+    private async Task CheckForUpdatesAsync()
+    {
+        bool isAr = _config.Language == "ar";
+        TxtStatus.Text = isAr ? "جاري التحقق من التحديثات..." : "Checking for updates...";
+        var res = await UpdateService.CheckForUpdatesAsync();
+        TxtStatus.Text = isAr ? "جاهز" : "Ready";
+
+        if (res.IsUpdateAvailable)
+        {
+            string msg = isAr
+                ? $"يوجد إصدار جديد متوفر: v{res.LatestVersion}\n(الإصدار الحالي: v{res.CurrentVersion})\n\nهل ترغب في فتح صفحة التنزيل؟"
+                : $"A new version is available: v{res.LatestVersion}\n(Current version: v{res.CurrentVersion})\n\nWould you like to open the download page?";
+
+            var r = ThemedMessageBox.Show(
+                this,
+                msg,
+                isAr ? "تحديث مواقيت" : "Mawaqit Update",
+                MessageBoxButton.YesNo,
+                MessageBoxImage.Information,
+                _theme,
+                _isDark,
+                _config.Language);
+
+            if (r == MessageBoxResult.Yes && !string.IsNullOrEmpty(res.DownloadUrl))
+            {
+                try
+                {
+                    System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(res.DownloadUrl) { UseShellExecute = true });
+                }
+                catch { }
+            }
+        }
+        else if (res.Error != null)
+        {
+            ThemedMessageBox.Show(
+                this,
+                isAr ? $"تعذر التحقق من التحديثات:\n{res.Error}" : $"Could not check for updates:\n{res.Error}",
+                isAr ? "تحديث مواقيت" : "Mawaqit",
+                MessageBoxButton.OK,
+                MessageBoxImage.Warning,
+                _theme,
+                _isDark,
+                _config.Language);
+        }
+        else
+        {
+            ThemedMessageBox.Show(
+                this,
+                isAr ? $"أنت تستخدم أحدث إصدار (v{res.CurrentVersion})." : $"You are already using the latest version (v{res.CurrentVersion}).",
+                isAr ? "تحديث مواقيت" : "Mawaqit",
+                MessageBoxButton.OK,
+                MessageBoxImage.Information,
+                _theme,
+                _isDark,
+                _config.Language);
+        }
+    }
 }

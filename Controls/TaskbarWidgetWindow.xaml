@@ -120,7 +120,7 @@
                               Style="{StaticResource WidgetMenuItem}" Click="MenuSettings_Click"/>
                     <MenuItem x:Name="MenuHide" Header="👁 إخفاء ودجت شريط المهام" 
                               Style="{StaticResource WidgetMenuItem}" Click="MenuHide_Click"/>
-                    <MenuItem x:Name="MenuCloseApp" Header="🚪 إغلاق التطبيق" FontWeight="SemiBold" 
+                    <MenuItem x:Name="MenuCloseApp" Header="⏻️ إغلاق التطبيق" FontWeight="SemiBold" 
                               Style="{StaticResource WidgetMenuItem}" Click="MenuCloseApp_Click"/>
                 </ContextMenu>
             </Border.ContextMenu>
@@ -183,5 +183,6 @@
                 </StackPanel>
             </Grid>
         </Border>
+
     </Grid>
 </Window>

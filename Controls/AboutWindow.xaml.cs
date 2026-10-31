@@ -15,7 +15,7 @@ public partial class AboutWindow : Window
     {
         InitializeComponent();
 
-        TxtVersion.Text = $"Version {GetType().Assembly.GetName().Version?.ToString(3) ?? "2.2.5"}";
+        TxtVersion.Text = $"Version {GetType().Assembly.GetName().Version?.ToString(3) ?? "2.2.6"}";
         ApplyTheme(theme, isDark);
         LoadLogo();
 

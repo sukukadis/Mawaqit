@@ -45,7 +45,7 @@ public class PrayerTimesService
             try
             {
                 using var request = new HttpRequestMessage(HttpMethod.Get, url);
-                request.Headers.Add("User-Agent", "Mawaqit/2.2.5");
+                request.Headers.Add("User-Agent", "Mawaqit/2.2.6");
 
                 var response = await Http.SendAsync(request);
                 if (!response.IsSuccessStatusCode)
@@ -84,6 +84,7 @@ public class PrayerTimesService
                             if (dayObj.TryGetProperty("timings", out timingsElement))
                             {
                                 foundToday = true;
+                                CalibrateHijri(dateObj);
                                 break;
                             }
                         }
@@ -97,6 +98,11 @@ public class PrayerTimesService
                         !dataObj.TryGetProperty("timings", out timingsElement))
                     {
                         continue;
+                    }
+
+                    if (dataObj.TryGetProperty("date", out var dateObj))
+                    {
+                        CalibrateHijri(dateObj);
                     }
                 }
 
@@ -125,6 +131,62 @@ public class PrayerTimesService
         }
 
         return (null, lastError);
+    }
+
+    public static void CalibrateHijri(JsonElement dateObj)
+    {
+        try
+        {
+            if (dateObj.TryGetProperty("hijri", out var hijriObj) &&
+                hijriObj.TryGetProperty("day", out var dayVal) &&
+                int.TryParse(dayVal.GetString(), out int apiDay))
+            {
+                int apiMonth = 0;
+                if (hijriObj.TryGetProperty("month", out var monthObj) &&
+                    monthObj.TryGetProperty("number", out var numVal))
+                {
+                    if (numVal.ValueKind == JsonValueKind.Number) apiMonth = numVal.GetInt32();
+                    else if (numVal.ValueKind == JsonValueKind.String && int.TryParse(numVal.GetString(), out int m)) apiMonth = m;
+                }
+
+                int apiYear = 0;
+                if (hijriObj.TryGetProperty("year", out var yearVal))
+                {
+                    if (yearVal.ValueKind == JsonValueKind.Number) apiYear = yearVal.GetInt32();
+                    else if (yearVal.ValueKind == JsonValueKind.String && int.TryParse(yearVal.GetString(), out int y)) apiYear = y;
+                }
+
+                if (apiMonth > 0 && apiYear > 0)
+                {
+                    var uq = new System.Globalization.UmAlQuraCalendar();
+                    for (int diff = -3; diff <= 3; diff++)
+                    {
+                        var testDate = DateTime.Today.AddDays(diff);
+                        if (uq.GetYear(testDate) == apiYear && uq.GetMonth(testDate) == apiMonth && uq.GetDayOfMonth(testDate) == apiDay)
+                        {
+                            IslamicEventsService.CountryCalibratedOffset = diff;
+                            return;
+                        }
+                    }
+                }
+
+                int uqDay = new System.Globalization.UmAlQuraCalendar().GetDayOfMonth(DateTime.Today);
+                IslamicEventsService.CountryCalibratedOffset = apiDay - uqDay;
+            }
+        }
+        catch { }
+    }
+
+    public static Dictionary<string, string> GetTimingsForDate(
+        DateTime date,
+        double lat,
+        double lng,
+        int calculationMethod,
+        string wilaya,
+        AppConfig config)
+    {
+        var timings = OfflinePrayerCalculator.CalculateTimings(date, lat, lng, calculationMethod);
+        return ApplyTuning(timings, wilaya, config);
     }
 
     public static string NormalizeTime(string timeStr)

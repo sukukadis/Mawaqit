@@ -22,6 +22,7 @@ public class TrayService : IDisposable
     private ToolStripMenuItem[] _volRadioItems = null!;
     private ToolStripMenuItem _customVolItem = null!;
     private ToolStripMenuItem _muteItem = null!;
+    private ToolStripMenuItem _checkUpdatesItem = null!;
     private ToolStripMenuItem _aboutItem = null!;
     private ToolStripMenuItem _exitItem = null!;
     private VolumePopupWindow? _volumePopup;
@@ -29,6 +30,7 @@ public class TrayService : IDisposable
     public event Action? ShowRequested;
     public event Action? ExitRequested;
     public event Action<bool>? TaskbarWidgetToggled;
+    public event Action? CheckUpdatesRequested;
 
     public TrayService(AppConfig config, AudioService audioService, Func<ThemePalette> getTheme, Func<bool> isDark)
     {
@@ -52,7 +54,6 @@ public class TrayService : IDisposable
         {
             var smallSize = System.Windows.Forms.SystemInformation.SmallIconSize;
 
-            // 1. Try disk paths first (direct access to high fidelity ICO frames)
             string[] candidates = new[]
             {
                 Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Resources", "logo.ico"),
@@ -74,7 +75,6 @@ public class TrayService : IDisposable
                 }
             }
 
-            // 2. Try embedded WPF Resource pack URI
             try
             {
                 var packIco = new Uri("pack://application:,,,/Resources/logo.ico", UriKind.Absolute);
@@ -88,7 +88,6 @@ public class TrayService : IDisposable
             }
             catch { }
 
-            // 3. Try extracting application icon embedded in .exe
             try
             {
                 string? exePath = Environment.ProcessPath ?? System.Windows.Forms.Application.ExecutablePath;
@@ -106,13 +105,13 @@ public class TrayService : IDisposable
         }
         catch { }
 
-        // Fallback default system icon
         _notifyIcon.Icon = SystemIcons.Application;
     }
 
     public void BuildContextMenu()
     {
         string lang = _config.Language;
+        bool isAr = lang == "ar";
         var menu = new ContextMenuStrip();
 
         _showItem = new ToolStripMenuItem(LocalizationService.Get("tray_show", lang), null, (s, e) => ShowRequested?.Invoke())
@@ -141,6 +140,9 @@ public class TrayService : IDisposable
             Checked = _config.TaskbarWidgetEnabled
         };
         menu.Items.Add(_taskbarWidgetItem);
+
+
+
         menu.Items.Add(new ToolStripSeparator());
 
         // Volume Submenu
@@ -171,6 +173,10 @@ public class TrayService : IDisposable
         _muteItem = new ToolStripMenuItem(GetMuteItemText(), null, (s, e) => ToggleMute());
         menu.Items.Add(_muteItem);
         menu.Items.Add(new ToolStripSeparator());
+
+        // Check for updates
+        _checkUpdatesItem = new ToolStripMenuItem(isAr ? "🔄 التحقق من وجود تحديثات" : "🔄 Check for Updates", null, (s, e) => CheckUpdatesRequested?.Invoke());
+        menu.Items.Add(_checkUpdatesItem);
 
         // About
         _aboutItem = new ToolStripMenuItem(LocalizationService.Get("tray_about", lang), null, (s, e) => OpenAboutDialog());
@@ -206,9 +212,11 @@ public class TrayService : IDisposable
     public void RefreshLabels()
     {
         string lang = _config.Language;
+        bool isAr = lang == "ar";
         _showItem.Text = LocalizationService.Get("tray_show", lang);
         _taskbarWidgetItem.Text = LocalizationService.Get("tray_taskbar_widget", lang);
         _taskbarWidgetItem.Checked = _config.TaskbarWidgetEnabled;
+        if (_checkUpdatesItem != null) _checkUpdatesItem.Text = isAr ? "🔄 التحقق من وجود تحديثات" : "🔄 Check for Updates";
         _volumeParentItem.Text = GetVolumeParentText();
         _customVolItem.Text = LocalizationService.Get("tray_custom", lang);
         _muteItem.Text = GetMuteItemText();

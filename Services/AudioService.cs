@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Threading;
+using System.Threading.Tasks;
 using System.Windows.Media;
 using Mawaqit.Models;
 
@@ -14,6 +16,7 @@ public class AudioService
     private string? _currentPath;
     private bool _isTestPlayback;
     private bool _isPlaying;
+    private CancellationTokenSource? _fadeCts;
 
     public event Action? PlaybackStarted;
     public event Action? PlaybackStopped;
@@ -30,6 +33,7 @@ public class AudioService
 
     private void OnMediaEnded(object? sender, EventArgs e)
     {
+        CancelFade();
         lock (_lock)
         {
             _isPlaying = false;
@@ -41,6 +45,7 @@ public class AudioService
 
     private void OnMediaFailed(object? sender, ExceptionEventArgs e)
     {
+        CancelFade();
         lock (_lock)
         {
             _isPlaying = false;
@@ -49,6 +54,17 @@ public class AudioService
         }
         Logger.LogError($"Audio playback failed: {e.ErrorException?.Message}");
         PlaybackStopped?.Invoke();
+    }
+
+    private void CancelFade()
+    {
+        try
+        {
+            _fadeCts?.Cancel();
+            _fadeCts?.Dispose();
+            _fadeCts = null;
+        }
+        catch { }
     }
 
     public static List<string> GetAudioSearchDirs()
@@ -104,7 +120,7 @@ public class AudioService
         return "";
     }
 
-    public bool Play(string path, double volume = 0.5, bool isMuted = false, bool isTest = false)
+    public bool Play(string path, double volume = 0.5, bool isMuted = false, bool isTest = false, bool fadeIn = false)
     {
         if (string.IsNullOrWhiteSpace(path) || !File.Exists(path))
         {
@@ -123,10 +139,54 @@ public class AudioService
                 _isPlaying = true;
             }
 
+            double targetVolume = Math.Clamp(volume, 0.0, 1.0);
             _player.Open(new Uri(Path.GetFullPath(path), UriKind.Absolute));
-            _player.Volume = Math.Clamp(volume, 0.0, 1.0);
             _player.IsMuted = isMuted;
-            _player.Play();
+
+            if (fadeIn && !isMuted && !isTest && targetVolume > 0.05)
+            {
+                _player.Volume = 0.02;
+                _player.Play();
+
+                _fadeCts = new CancellationTokenSource();
+                var token = _fadeCts.Token;
+
+                _ = Task.Run(async () =>
+                {
+                    try
+                    {
+                        const int steps = 12;
+                        const int stepDelayMs = 200; // Total 2.4 seconds
+                        double startVol = 0.02;
+                        double stepDelta = (targetVolume - startVol) / steps;
+
+                        for (int i = 1; i <= steps; i++)
+                        {
+                            await Task.Delay(stepDelayMs, token);
+                            if (token.IsCancellationRequested) break;
+
+                            double currentVol = Math.Clamp(startVol + (stepDelta * i), 0.0, targetVolume);
+                            System.Windows.Application.Current?.Dispatcher.InvokeAsync(() =>
+                            {
+                                if (!token.IsCancellationRequested && _isPlaying)
+                                {
+                                    _player.Volume = currentVol;
+                                }
+                            });
+                        }
+                    }
+                    catch (OperationCanceledException) { }
+                    catch (Exception ex)
+                    {
+                        Logger.LogError($"Audio fade-in error: {ex.Message}");
+                    }
+                }, token);
+            }
+            else
+            {
+                _player.Volume = targetVolume;
+                _player.Play();
+            }
 
             PlaybackStarted?.Invoke();
             return true;
@@ -146,6 +206,8 @@ public class AudioService
 
     public void Stop()
     {
+        CancelFade();
+
         try
         {
             _player.Stop();
@@ -165,6 +227,7 @@ public class AudioService
 
     public void SetVolume(double volume)
     {
+        CancelFade();
         try
         {
             _player.Volume = Math.Clamp(volume, 0.0, 1.0);
