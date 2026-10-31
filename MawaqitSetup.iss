@@ -126,13 +126,13 @@ begin
       ForceDirectories(ConfigFolder);
       if SelectedLang = 'english' then
       begin
-        JsonContent := '{"wilaya_ar":"\u0627\u0644\u062c\u0632\u0627\u0626\u0631","wilaya_en":"Alger","language":"en","adhan_enabled":true,"reminder_enabled":true,"start_with_windows":' + 
-          BoolToJson(WizardIsTaskSelected('startup')) + ',"theme_mode":"dark","volume":0.33}';
+        JsonContent := '{"config_version":2,"wilaya_ar":"\u0627\u0644\u062c\u0632\u0627\u0626\u0631","wilaya_en":"Alger","language":"en","adhan_enabled":false,"reminder_enabled":false,"prayer_adhan_enabled":{"Fajr":true,"Dhuhr":true,"Asr":true,"Maghrib":true,"Isha":true},"start_with_windows":' + 
+          BoolToJson(WizardIsTaskSelected('startup')) + ',"theme_mode":"system","volume":0.33}';
       end
       else
       begin
-        JsonContent := '{"wilaya_ar":"\u0627\u0644\u062c\u0632\u0627\u0626\u0631","wilaya_en":"Alger","language":"ar","adhan_enabled":true,"reminder_enabled":true,"start_with_windows":' + 
-          BoolToJson(WizardIsTaskSelected('startup')) + ',"theme_mode":"dark","volume":0.33}';
+        JsonContent := '{"config_version":2,"wilaya_ar":"\u0627\u0644\u062c\u0632\u0627\u0626\u0631","wilaya_en":"Alger","language":"ar","adhan_enabled":false,"reminder_enabled":false,"prayer_adhan_enabled":{"Fajr":true,"Dhuhr":true,"Asr":true,"Maghrib":true,"Isha":true},"start_with_windows":' + 
+          BoolToJson(WizardIsTaskSelected('startup')) + ',"theme_mode":"system","volume":0.33}';
       end;
       SaveStringToFile(ConfigPath, JsonContent, False);
     end;

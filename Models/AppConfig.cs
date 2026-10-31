@@ -8,6 +8,9 @@ namespace Mawaqit.Models;
 
 public class AppConfig
 {
+    [JsonPropertyName("config_version")]
+    public int ConfigVersion { get; set; } = 0;
+
     [JsonPropertyName("wilaya_ar")]
     public string WilayaAr { get; set; } = "الجزائر";
 
@@ -155,6 +158,19 @@ public class AppConfig
                     config.PrayerAdhanEnabled ??= new(StringComparer.OrdinalIgnoreCase);
                     config.PrayerReminderEnabled ??= new(StringComparer.OrdinalIgnoreCase);
                     config.EnsureCoordinates();
+                    if (config.ConfigVersion < 2)
+                    {
+                        config.AdhanEnabled = false;
+                        config.ReminderEnabled = false;
+                        config.ThemeMode = "system";
+                        config.PrayerAdhanEnabled ??= new(StringComparer.OrdinalIgnoreCase);
+                        foreach (var p in new[] { "Fajr", "Dhuhr", "Asr", "Maghrib", "Isha" })
+                        {
+                            config.PrayerAdhanEnabled[p] = true;
+                        }
+                        config.ConfigVersion = 2;
+                        config.Save();
+                    }
                     return config;
                 }
             }
@@ -164,7 +180,7 @@ public class AppConfig
             Services.Logger.LogError($"Failed to load config: {ex.Message}");
         }
 
-        var def = new AppConfig();
+        var def = new AppConfig { ConfigVersion = 2 };
         def.EnsureCoordinates();
         return def;
     }
