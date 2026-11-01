@@ -42,12 +42,10 @@ if (-not $isccPath) {
 
 Write-Host "[OK] Inno Setup Compiler found: $isccPath" -ForegroundColor Green
 
-# Synchronize logo.ico from Desktop if available
-$desktopLogo = "C:\Users\1\Desktop\logo.ico"
-if (Test-Path $desktopLogo) {
-    Copy-Item -Path $desktopLogo -Destination "$ScriptDir\Resources\logo.ico" -Force
-    Copy-Item -Path $desktopLogo -Destination "$ScriptDir\logo.ico" -Force
-    Write-Host "[OK] Synchronized logo.ico from Desktop." -ForegroundColor Green
+# Ensure Resources\logo.ico is synchronized with root logo.ico
+if (Test-Path "$ScriptDir\logo.ico") {
+    Copy-Item -Path "$ScriptDir\logo.ico" -Destination "$ScriptDir\Resources\logo.ico" -Force
+    Write-Host "[OK] Synchronized Resources\logo.ico from root logo.ico." -ForegroundColor Green
 }
 
 # Detect current version from MawaqitSetup.iss

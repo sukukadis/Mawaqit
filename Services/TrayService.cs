@@ -59,7 +59,6 @@ public class TrayService : IDisposable
                 Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Resources", "logo.ico"),
                 Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "logo.ico"),
                 Path.Combine(AppConfig.AppDataFolder, "logo.ico"),
-                @"C:\Users\1\Desktop\logo.ico"
             };
 
             foreach (var path in candidates)
