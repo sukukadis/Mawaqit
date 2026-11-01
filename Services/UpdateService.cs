@@ -31,7 +31,7 @@ public static class UpdateService
         {
             return $"{ver.Major}.{ver.Minor}.{ver.Build}";
         }
-        return "2.2.6";
+        return "2.2.7";
     }
 
     public static async Task<UpdateCheckResult> CheckForUpdatesAsync()

@@ -10,10 +10,10 @@
     <ApplicationIcon>Resources\logo.ico</ApplicationIcon>
     <RootNamespace>Mawaqit</RootNamespace>
     <AssemblyName>Mawaqit</AssemblyName>
-    <Version>2.2.6</Version>
-    <AssemblyVersion>2.2.6.0</AssemblyVersion>
-    <FileVersion>2.2.6.0</FileVersion>
-    <InformationalVersion>2.2.6</InformationalVersion>
+    <Version>2.2.7</Version>
+    <AssemblyVersion>2.2.7.0</AssemblyVersion>
+    <FileVersion>2.2.7.0</FileVersion>
+    <InformationalVersion>2.2.7</InformationalVersion>
     <Product>Mawaqit Prayer Times</Product>
     <Company></Company>
     <Authors></Authors>

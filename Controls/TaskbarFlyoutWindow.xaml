@@ -110,6 +110,15 @@
                         <TextBlock x:Name="TimeDhuhr" Text="12:43" FontSize="15.5" FontFamily="Segoe UI, Consolas, monospace" FontWeight="SemiBold" Foreground="#FFFFFF" HorizontalAlignment="Right" VerticalAlignment="Center"/>
                     </Grid>
 
+                    <!-- Asr Row -->
+                    <Grid x:Name="RowAsr" Height="38" Margin="4,2">
+                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                            <TextBlock x:Name="IconAsr" Text="✓" Width="24" FontSize="14" Foreground="#A0A0A0" VerticalAlignment="Center"/>
+                            <TextBlock x:Name="NameAsr" Text="Asr" FontSize="15" FontWeight="SemiBold" Foreground="#FFFFFF" VerticalAlignment="Center"/>
+                        </StackPanel>
+                        <TextBlock x:Name="TimeAsr" Text="15:20" FontSize="15.5" FontFamily="Segoe UI, Consolas, monospace" FontWeight="SemiBold" Foreground="#FFFFFF" HorizontalAlignment="Right" VerticalAlignment="Center"/>
+                    </Grid>
+
                     <!-- Active/Next Prayer Highlight Card (Emerald Green matching app interface) -->
                     <Border x:Name="CardActivePrayer" CornerRadius="8" Background="#10B981" Height="44" Padding="12,0" Margin="0,3">
                         <Grid VerticalAlignment="Center">

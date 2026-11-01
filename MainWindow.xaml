@@ -456,7 +456,7 @@
                         <TextBlock x:Name="SecUpdatesTitle" Text="🔄 التحديثات" FontSize="13" FontWeight="Bold" Margin="4,6,4,4"/>
                         <Border x:Name="CardUpdates" CornerRadius="8" BorderThickness="1" Margin="0,0,0,10">
                             <Grid Margin="14,10">
-                                <TextBlock Text="الإصدار الحالي: v2.2.6" x:Name="TxtAppVersionSettings" FontSize="12" FontWeight="SemiBold" VerticalAlignment="Center" HorizontalAlignment="Left"/>
+                                <TextBlock Text="الإصدار الحالي: v2.2.7" x:Name="TxtAppVersionSettings" FontSize="12" FontWeight="SemiBold" VerticalAlignment="Center" HorizontalAlignment="Left"/>
                                 <Button x:Name="BtnCheckUpdates" Content="🔄 التحقق من وجود تحديثات"
                                         Style="{StaticResource RoundedButtonStyle}"
                                         HorizontalAlignment="Right" Click="BtnCheckUpdates_Click"/>

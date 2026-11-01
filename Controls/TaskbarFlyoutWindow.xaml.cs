@@ -4,6 +4,7 @@ using System.IO;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Interop;
 using System.Windows.Media.Imaging;
 using System.Windows.Threading;
@@ -289,6 +290,22 @@ public partial class TaskbarFlyoutWindow : Window
         BtnDismiss.Content = isAr ? "إيقاف" : "Dismiss";
         BtnDismiss.Visibility = isAudioPlaying ? Visibility.Visible : Visibility.Collapsed;
 
+        // Position active card at the proper slot
+        Grid? activeGrid = GetRowGrid(nextPrayer);
+        if (activeGrid != null)
+        {
+            PrayerListPanel.Children.Remove(CardActivePrayer);
+            int targetIdx = PrayerListPanel.Children.IndexOf(activeGrid);
+            if (targetIdx >= 0)
+            {
+                PrayerListPanel.Children.Insert(targetIdx, CardActivePrayer);
+            }
+            else
+            {
+                PrayerListPanel.Children.Add(CardActivePrayer);
+            }
+        }
+
         // Render each prayer
         string[] prayerKeys = { "Fajr", "Sunrise", "Dhuhr", "Asr", "Maghrib", "Isha" };
 
@@ -306,6 +323,7 @@ public partial class TaskbarFlyoutWindow : Window
                 NameActive.Text = displayName;
                 TimeActive.Text = timeStr;
                 IconActive.Text = "🕒";
+                CardActivePrayer.Visibility = Visibility.Visible;
                 SetRowVisibility(key, false);
             }
             else
@@ -316,6 +334,17 @@ public partial class TaskbarFlyoutWindow : Window
         }
     }
 
+    private Grid? GetRowGrid(string key) => key switch
+    {
+        "Fajr" => RowFajr,
+        "Sunrise" => RowShuruq,
+        "Dhuhr" => RowDhuhr,
+        "Asr" => RowAsr,
+        "Maghrib" => RowMaghrib,
+        "Isha" => RowIsha,
+        _ => null
+    };
+
     private string GetPrayerDisplayName(string key, DateTime now, string lang)
     {
         if (key == "Dhuhr" && now.DayOfWeek == DayOfWeek.Friday)
@@ -324,7 +353,7 @@ public partial class TaskbarFlyoutWindow : Window
         }
         if (key == "Sunrise")
         {
-            return lang == "ar" ? "الشروق" : "Shuruq";
+            return lang == "ar" ? "الشروق" : "Sunrise";
         }
         return LocalizationService.Get(key, lang);
     }
@@ -337,7 +366,7 @@ public partial class TaskbarFlyoutWindow : Window
             case "Fajr": RowFajr.Visibility = vis; break;
             case "Sunrise": RowShuruq.Visibility = vis; break;
             case "Dhuhr": RowDhuhr.Visibility = vis; break;
-            case "Asr": break;
+            case "Asr": RowAsr.Visibility = vis; break;
             case "Maghrib": RowMaghrib.Visibility = vis; break;
             case "Isha": RowIsha.Visibility = vis; break;
         }
@@ -375,6 +404,14 @@ public partial class TaskbarFlyoutWindow : Window
                 NameDhuhr.Foreground = textColor;
                 TimeDhuhr.Text = time;
                 TimeDhuhr.Foreground = textColor;
+                break;
+            case "Asr":
+                IconAsr.Text = icon;
+                IconAsr.Foreground = textColor;
+                NameAsr.Text = name;
+                NameAsr.Foreground = textColor;
+                TimeAsr.Text = time;
+                TimeAsr.Foreground = textColor;
                 break;
             case "Maghrib":
                 IconMaghrib.Text = icon;

@@ -1030,7 +1030,7 @@ public partial class MainWindow : Window
     {
         if (_prayerDateTimes.Count == 0) return "";
 
-        foreach (var name in PrayerTimesData.AdhanOrder)
+        foreach (var name in PrayerTimesData.Order)
         {
             if (_prayerDateTimes.TryGetValue(name, out var dt) && dt > now)
             {
@@ -1074,19 +1074,19 @@ public partial class MainWindow : Window
         TxtBannerNext.Text = LocalizationService.Get("next_prayer", _config.Language, displayPrayer, timeStr, h, m, s);
         _trayService.UpdateNextPrayer(displayPrayer, timeStr, diff);
 
-        // Check if currently within 20 minutes elapsed since Adhan
+        // Check if currently within 20 minutes elapsed since prayer time
         bool isElapsed = false;
         TimeSpan elapsedSpan = TimeSpan.Zero;
         string activePrayerName = "";
         string activePrayerTimeStr = "";
         string activeIcon = "";
 
-        foreach (var name in PrayerTimesData.AdhanOrder)
+        foreach (var name in PrayerTimesData.Order)
         {
             if (_prayerDateTimes.TryGetValue(name, out var pdt))
             {
                 double secSince = (now - pdt).TotalSeconds;
-                if (secSince >= 0 && secSince < 1200) // Within 20 minutes after Adhan
+                if (secSince >= 0 && secSince < 1200) // Within 20 minutes after prayer time
                 {
                     isElapsed = true;
                     elapsedSpan = TimeSpan.FromSeconds(secSince);
